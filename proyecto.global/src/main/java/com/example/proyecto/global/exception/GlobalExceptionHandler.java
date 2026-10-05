@@ -49,6 +49,20 @@ public class GlobalExceptionHandler {
 		return build(ex.getStatus(), ex.getMessage(), request, Map.of(), List.of());
 	}
 
+	@ExceptionHandler(CredencialesInvalidasException.class)
+	public ResponseEntity<ApiErrorResponse> handleCredenciales(CredencialesInvalidasException ex,
+			HttpServletRequest request) {
+		log.warn("Fallo de autenticacion en {}", request.getRequestURI());
+		return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, Map.of(), List.of());
+	}
+
+	@ExceptionHandler(EmailDuplicadoException.class)
+	public ResponseEntity<ApiErrorResponse> handleEmailDuplicado(EmailDuplicadoException ex,
+			HttpServletRequest request) {
+		log.warn("Intento de registro con correo duplicado en {}", request.getRequestURI());
+		return build(HttpStatus.CONFLICT, ex.getMessage(), request, Map.of(), List.of());
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiErrorResponse> handleInvalidBody(MethodArgumentNotValidException ex,
 			HttpServletRequest request) {
