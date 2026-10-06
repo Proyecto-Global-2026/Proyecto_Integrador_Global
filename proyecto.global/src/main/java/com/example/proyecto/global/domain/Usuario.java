@@ -78,6 +78,16 @@ public class Usuario {
 		return email == null ? null : email.trim().toLowerCase();
 	}
 
+	/**
+	 * El correo no se modifica en la base: se reescribe con el mismo valor
+	 * normalizado, para que la restriccion unica se mantenga coherente.
+	 */
+	public void actualizar(String nombre, String email, Rol rol) {
+		this.nombre = nombre;
+		this.email = email;
+		this.rol = rol;
+	}
+
 	public UUID getId() {
 		return id;
 	}
