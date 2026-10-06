@@ -28,6 +28,7 @@ import com.example.proyecto.global.dto.ApiErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -106,6 +107,14 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ApiErrorResponse> handleNoResource(NoResourceFoundException ex,
 			HttpServletRequest request) {
 		return build(HttpStatus.NOT_FOUND, "El recurso solicitado no existe", request, Map.of(), List.of());
+	}
+
+	@ExceptionHandler(AuthorizationDeniedException.class)
+	public ResponseEntity<ApiErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex,
+			HttpServletRequest request) {
+		log.warn("Acceso denegado en {}: {}", request.getRequestURI(), ex.getMessage());
+		return build(HttpStatus.FORBIDDEN, "No tienes permisos para acceder a este recurso", request, Map.of(),
+				List.of());
 	}
 
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
