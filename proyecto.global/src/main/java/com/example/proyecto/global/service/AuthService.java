@@ -1,7 +1,5 @@
 package com.example.proyecto.global.service;
 
-import java.util.List;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -60,10 +58,5 @@ public class AuthService {
 		return usuarioRepository.findByEmail(principal.getUsername())
 				.map(UsuarioResponse::from)
 				.orElseThrow(CredencialesInvalidasException::new);
-	}
-
-	@Transactional(readOnly = true)
-	public List<UsuarioResponse> listarUsuarios() {
-		return usuarioRepository.findAll().stream().map(UsuarioResponse::from).toList();
 	}
 }
