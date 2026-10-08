@@ -1,7 +1,7 @@
 import LogoutIcon from '@mui/icons-material/Logout'
 import { Avatar, Box, Button, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
-import { CheckCircle2, Mail, ShieldCheck } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { CheckCircle2, Mail, ShieldCheck, Users } from 'lucide-react'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 
 function inicialesDe(nombre: string): string {
@@ -22,6 +22,8 @@ export function HomePage() {
     logout()
     navigate('/login', { replace: true })
   }
+
+  const puedeVerUsuarios = usuario.rol === 'COORDINADOR' || usuario.rol === 'DIRECCION'
 
   return (
     <Box className="pagina-centrada">
@@ -81,6 +83,18 @@ export function HomePage() {
               <Mail size={18} />
               <Typography variant="body2">{usuario.email}</Typography>
             </Stack>
+
+            {puedeVerUsuarios && (
+              <Button
+                variant="outlined"
+                size="large"
+                startIcon={<Users size={18} />}
+                component={RouterLink}
+                to="/usuarios"
+              >
+                Gestionar usuarios y roles
+              </Button>
+            )}
 
             <AlertSesion />
 
