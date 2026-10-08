@@ -33,3 +33,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Archivos adjuntos locales (S1-11) ###
+uploads/
