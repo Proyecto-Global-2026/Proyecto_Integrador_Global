@@ -13,12 +13,12 @@ export function clearToken(): void {
 }
 
 /**
- * Revisa la fecha de expiracion del JWT sin verificar la firma (eso lo hace el
- * backend). Si el payload no se puede leer se considera invalido.
+ * Devuelve el instante de expiracion del JWT en milisegundos (epoch), o null si
+ * el payload no se puede leer. No verifica la firma (eso lo hace el backend).
  */
-export function tokenExpirado(token: string): boolean {
+export function expiracionDelToken(token: string): number | null {
   const partes = token.split('.')
-  if (partes.length !== 3) return true
+  if (partes.length !== 3) return null
 
   try {
     const payload = JSON.parse(
@@ -29,9 +29,19 @@ export function tokenExpirado(token: string): boolean {
           .join(''),
       ),
     ) as { exp?: number }
-    if (typeof payload.exp !== 'number') return true
-    return payload.exp * 1000 <= Date.now()
+    if (typeof payload.exp !== 'number') return null
+    return payload.exp * 1000
   } catch {
-    return true
+    return null
   }
+}
+
+/**
+ * Revisa la fecha de expiracion del JWT sin verificar la firma (eso lo hace el
+ * backend). Si el payload no se puede leer se considera invalido.
+ */
+export function tokenExpirado(token: string): boolean {
+  const exp = expiracionDelToken(token)
+  if (exp === null) return true
+  return exp <= Date.now()
 }

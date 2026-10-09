@@ -4,6 +4,7 @@ import type { Usuario } from './types'
 export interface AuthContextValue {
   usuario: Usuario | null
   cargando: boolean
+  sesionExpirada: boolean
   login: (email: string, password: string) => Promise<void>
   loginConToken: (token: string) => Promise<void>
   logout: () => void
