@@ -1,7 +1,5 @@
 import Box from '@mui/material/Box'
-import CircularProgress from '@mui/material/CircularProgress'
 import Paper from '@mui/material/Paper'
-import Stack from '@mui/material/Stack'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
@@ -9,9 +7,10 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
-import Typography from '@mui/material/Typography'
-import { Inbox } from 'lucide-react'
+import { alpha } from '@mui/material/styles'
 import type { ReactNode } from 'react'
+import { EsqueletoTabla } from './ui/EsqueletoTabla'
+import { EstadoVacio } from './ui/EstadoVacio'
 
 export interface ColumnaCatalogo<T> {
   encabezado: string
@@ -30,6 +29,7 @@ interface Props<T> {
   onCambiarTamano: (tamano: number) => void
   claveFila: (fila: T) => string
   mensajeVacio?: string
+  detalleVacio?: string
   acciones?: (fila: T) => ReactNode
 }
 
@@ -44,25 +44,27 @@ export function TablaCatalogo<T>({
   onCambiarTamano,
   claveFila,
   mensajeVacio = 'No se encontraron registros',
+  detalleVacio,
   acciones,
 }: Props<T>) {
   const totalColumnas = columnas.length + (acciones ? 1 : 0)
 
   return (
-    <Paper sx={{ borderRadius: 3, border: '1px solid #eef2f7', overflow: 'hidden' }}>
-      <TableContainer>
-        <Table size="small">
+    <Paper sx={{ borderRadius: '18px', border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+      <TableContainer sx={{ maxHeight: '72vh' }}>
+        <Table size="small" stickyHeader>
           <TableHead>
             <TableRow
               sx={{
                 '& th': {
-                  background: '#f8fafc',
-                  color: '#64748b',
+                  backgroundColor: (theme) => alpha(theme.palette.text.secondary, 0.07),
+                  color: 'text.secondary',
                   fontSize: 12,
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',
                   fontWeight: 700,
-                  borderBottom: '1px solid #eef2f7',
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
                   py: 1.5,
                 },
               }}
@@ -80,40 +82,11 @@ export function TablaCatalogo<T>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {cargando && (
-              <TableRow>
-                <TableCell colSpan={totalColumnas} align="center" sx={{ border: 0 }}>
-                  <Stack direction="row" spacing={1.5} sx={{ justifyContent: 'center', alignItems: 'center', py: 5 }}>
-                    <CircularProgress size={22} />
-                    <Typography variant="body2" color="text.secondary">
-                      Cargando...
-                    </Typography>
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            )}
+            {cargando && <EsqueletoTabla filas={Math.min(tamanoPagina, 8)} columnas={totalColumnas} />}
             {!cargando && filas.length === 0 && (
               <TableRow>
-                <TableCell colSpan={totalColumnas} align="center" sx={{ border: 0 }}>
-                  <Stack spacing={1.25} sx={{ alignItems: 'center', py: 6 }}>
-                    <Box
-                      sx={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#94a3b8',
-                        background: '#f1f5f9',
-                      }}
-                    >
-                      <Inbox size={26} />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {mensajeVacio}
-                    </Typography>
-                  </Stack>
+                <TableCell colSpan={totalColumnas} sx={{ border: 0 }}>
+                  <EstadoVacio mensaje={mensajeVacio} detalle={detalleVacio} />
                 </TableCell>
               </TableRow>
             )}
@@ -123,7 +96,7 @@ export function TablaCatalogo<T>({
                   key={claveFila(fila)}
                   hover
                   sx={{
-                    '& td': { borderColor: '#f1f5f9', py: 1.5 },
+                    '& td': { borderColor: 'divider', py: 1.5 },
                     '&:last-child td': { borderBottom: 0 },
                   }}
                 >
@@ -154,7 +127,7 @@ export function TablaCatalogo<T>({
         }}
         rowsPerPageOptions={[10, 20, 50]}
         labelRowsPerPage="Filas por pagina"
-        sx={{ borderTop: '1px solid #eef2f7' }}
+        sx={{ borderTop: '1px solid', borderColor: 'divider' }}
       />
     </Paper>
   )

@@ -1,15 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import GoogleIcon from '@mui/icons-material/Google'
-import { Alert, Box, Button, Divider, IconButton, InputAdornment, Link, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Card, Divider, IconButton, InputAdornment, Link, Stack, TextField, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { Award, BarChart3, ClipboardCheck, Eye, EyeOff, GraduationCap, Lock, Mail } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import axios from 'axios'
+import heroUrl from '../assets/hero.png'
 import { API_BASE_URL } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import type { ApiError } from '../auth/types'
+import { useTema } from '../theme/contextoTema'
 
 const loginSchema = z.object({
   email: z.string().min(1, 'El correo es obligatorio').email('Ingresa un correo valido'),
@@ -97,7 +100,8 @@ export function LoginPage() {
       sx={{
         minHeight: '100vh',
         display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: 'minmax(360px, 44%) 1fr' },
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+        bgcolor: 'background.default',
       }}
     >
       <PanelMarca />
@@ -106,222 +110,263 @@ export function LoginPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          px: { xs: 3, sm: 6 },
-          py: 5,
+          px: { xs: 2, sm: 4, md: 6 },
+          py: { xs: 3, sm: 5 },
         }}
       >
-        <Stack sx={{ width: '100%', maxWidth: 440 }} spacing={3}>
-          <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 46,
-                height: 46,
-                borderRadius: '14px',
-                backgroundImage: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 10px 20px -10px rgba(99, 102, 241, 0.9)',
-              }}
-            >
-              <GraduationCap size={26} />
-            </Box>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Proyecto Integrador Global
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Seguimiento de Planeacion Didactica
-              </Typography>
-            </Box>
-          </Stack>
-
-          <Box>
-            <Typography variant="h5">Bienvenido de vuelta</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Inicia sesion con tu correo institucional para continuar
-            </Typography>
-          </Box>
-
-          {sesionExpirada && (
-            <Alert severity="warning" variant="filled">
-              Tu sesion expiro o caduco. Inicia sesion de nuevo para continuar.
-            </Alert>
-          )}
-
-          {oauth2Error && (
-            <Alert severity="error" variant="filled">
-              No se pudo iniciar sesion con Google. Intenta de nuevo.
-            </Alert>
-          )}
-
-          {errors.root && (
-            <Alert severity="error" variant="filled">
-              {errors.root.message}
-            </Alert>
-          )}
-
-          <Box component="form" onSubmit={onSubmit} noValidate>
-            <Stack spacing={2.25}>
-              <TextField
-                label="Correo electronico"
-                type="email"
-                autoComplete="email"
-                fullWidth
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Mail size={19} color={errors.email ? '#d32f2f' : '#94a3b8'} />
-                      </InputAdornment>
-                    ),
-                  },
+        <Card
+          sx={{
+            width: '100%',
+            maxWidth: 480,
+            borderRadius: '24px',
+            p: { xs: 3, sm: 4 },
+            boxShadow: (theme) => `0 40px 80px -50px ${alpha(theme.palette.primary.main, 0.6)}`,
+          }}
+        >
+          <Stack spacing={2.5}>
+            <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '13px',
+                  backgroundImage: 'linear-gradient(135deg, #22D3EE 0%, #A78BFA 100%)',
+                  color: '#041318',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 10px 20px -10px rgba(34, 211, 238, 0.9)',
                 }}
-                {...control.register('email')}
-              />
-
-              <TextField
-                label="Contrasena"
-                type={verPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                fullWidth
-                error={!!errors.password}
-                helperText={errors.password?.message}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock size={19} color={errors.password ? '#d32f2f' : '#94a3b8'} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={verPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
-                          onClick={() => setVerPassword((actual) => !actual)}
-                          edge="end"
-                          size="small"
-                        >
-                          {verPassword ? <EyeOff size={19} /> : <Eye size={19} />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                {...control.register('password')}
-              />
-
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={isSubmitting}
-                sx={{ py: 1.25, fontSize: '1rem' }}
               >
-                {isSubmitting ? 'Ingresando...' : 'Iniciar sesion'}
-              </Button>
+                <GraduationCap size={25} />
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ lineHeight: 1.2 }}>
+                  Proyecto Integrador Global
+                </Typography>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  Seguimiento de Planeacion Didactica
+                </Typography>
+              </Box>
             </Stack>
-          </Box>
 
-          {OAUTH2_HABILITADO && (
-            <>
-              <Divider>o continua con</Divider>
-              <Button
-                variant="outlined"
-                size="large"
-                fullWidth
-                startIcon={<GoogleIcon />}
-                onClick={continuarConGoogle}
-                disabled={isSubmitting}
-                sx={{ py: 1.15, backgroundColor: '#fff' }}
-              >
-                Google
-              </Button>
-            </>
-          )}
+            <Box>
+              <Typography variant="h5">Bienvenido de vuelta</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                Inicia sesion con tu correo institucional para continuar
+              </Typography>
+            </Box>
 
-          <Typography variant="body2" color="text.secondary" align="center">
-            ¿No tienes cuenta?{' '}
-            <Link href="#" underline="hover" sx={{ fontWeight: 600 }}>
-              Contacta a coordinacion
-            </Link>
-          </Typography>
-        </Stack>
+            {sesionExpirada && (
+              <Alert severity="warning" variant="filled">
+                Tu sesion expiro o caduco. Inicia sesion de nuevo para continuar.
+              </Alert>
+            )}
+
+            {oauth2Error && (
+              <Alert severity="error" variant="filled">
+                No se pudo iniciar sesion con Google. Intenta de nuevo.
+              </Alert>
+            )}
+
+            {errors.root && (
+              <Alert severity="error" variant="filled">
+                {errors.root.message}
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={onSubmit} noValidate>
+              <Stack spacing={2.25}>
+                <TextField
+                  label="Correo electronico"
+                  type="email"
+                  autoComplete="email"
+                  fullWidth
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ color: errors.email ? 'error.main' : 'text.secondary' }}>
+                          <Mail size={19} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                  {...control.register('email')}
+                />
+
+                <TextField
+                  label="Contrasena"
+                  type={verPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  fullWidth
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ color: errors.password ? 'error.main' : 'text.secondary' }}>
+                          <Lock size={19} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label={verPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+                            onClick={() => setVerPassword((actual) => !actual)}
+                            edge="end"
+                            size="small"
+                          >
+                            {verPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                  {...control.register('password')}
+                />
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  disabled={isSubmitting}
+                  sx={{ py: 1.25, fontSize: '1rem' }}
+                >
+                  {isSubmitting ? 'Ingresando...' : 'Iniciar sesion'}
+                </Button>
+              </Stack>
+            </Box>
+
+            {OAUTH2_HABILITADO && (
+              <>
+                <Divider>o continua con</Divider>
+                <Button variant="outlined" size="large" fullWidth startIcon={<GoogleIcon />} onClick={continuarConGoogle} disabled={isSubmitting} sx={{ py: 1.15 }}>
+                  Google
+                </Button>
+              </>
+            )}
+
+            <Typography variant="body2" color="text.secondary" align="center">
+              ¿No tienes cuenta?{' '}
+              <Link href="#" underline="hover" sx={{ fontWeight: 600 }}>
+                Contacta a coordinacion
+              </Link>
+            </Typography>
+          </Stack>
+        </Card>
       </Box>
     </Box>
   )
 }
 
 function PanelMarca() {
+  const { modo } = useTema()
+  const esOscuro = modo === 'dark'
+
   return (
     <Box
       sx={{
+        position: 'relative',
+        overflow: 'hidden',
         display: { xs: 'none', md: 'flex' },
         flexDirection: 'column',
         justifyContent: 'space-between',
-        p: { md: 6, lg: 7 },
-        color: '#fff',
-        backgroundImage: 'linear-gradient(155deg, #4f46e5 0%, #6d28d9 52%, #7c3aed 100%)',
-        position: 'relative',
-        overflow: 'hidden',
+        gap: 3.5,
+        p: { md: 5, lg: 6 },
+        borderRight: '1px solid',
+        borderColor: 'divider',
+        backgroundImage: (theme) =>
+          `linear-gradient(170deg, ${alpha(theme.palette.primary.main, esOscuro ? 0.22 : 0.5)} 0%, ${alpha('#A78BFA', 0.16)} 55%, transparent 100%)`,
       }}
     >
       <Box
         sx={{
           position: 'absolute',
-          width: 360,
-          height: 360,
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.08)',
-          top: -110,
-          right: -130,
+          inset: 0,
+          backgroundImage: (theme) =>
+            `linear-gradient(${alpha(theme.palette.text.secondary, 0.05)} 1px, transparent 1px), linear-gradient(90deg, ${alpha(theme.palette.text.secondary, 0.05)} 1px, transparent 1px)`,
+          backgroundSize: '44px 44px',
+          maskImage: 'radial-gradient(ellipse at 30% 20%, black 30%, transparent 75%)',
         }}
       />
       <Box
         sx={{
           position: 'absolute',
-          width: 260,
-          height: 260,
+          width: 340,
+          height: 340,
           borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.06)',
-          bottom: -80,
-          left: -70,
+          top: -120,
+          right: -120,
+          background: (theme) => `radial-gradient(circle, ${alpha(theme.palette.primary.main, esOscuro ? 0.3 : 0.35)} 0%, transparent 70%)`,
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 300,
+          height: 300,
+          borderRadius: '50%',
+          bottom: -140,
+          left: -120,
+          background: 'radial-gradient(circle, rgba(167, 139, 250, 0.28) 0%, transparent 70%)',
         }}
       />
 
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, position: 'relative' }}>
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, position: 'relative', flexShrink: 0 }}>
         <SchoolMark />
-        <Typography sx={{ fontWeight: 700, fontSize: '1.05rem' }}>
-          Planeacion Didactica
-        </Typography>
+        <Box>
+          <Typography sx={{ fontWeight: 700, lineHeight: 1.1 }}>Planeacion Didactica</Typography>
+          <Typography variant="caption" color="text.secondary">
+            UTNG · Desarrollo Web Integral
+          </Typography>
+        </Box>
       </Stack>
 
-      <Stack spacing={4} sx={{ position: 'relative' }}>
+      <Stack spacing={3} sx={{ position: 'relative', justifyContent: 'center', minHeight: 0, overflowY: 'auto', py: 0.5 }}>
+        <Box
+          sx={{
+            width: 'min(100%, 340px)',
+            height: 190,
+            borderRadius: '22px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: 3,
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, esOscuro ? 0.1 : 0.12),
+            border: (theme) => `1px solid ${alpha(theme.palette.text.secondary, 0.12)}`,
+            boxShadow: (theme) => `0 30px 60px -30px ${alpha(theme.palette.primary.main, 0.55)}`,
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <img src={heroUrl} alt="Logotipo UTNG" style={{ width: '74%', maxHeight: '100%', objectFit: 'contain' }} />
+        </Box>
+
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, lineHeight: 1.15 }}>
+          <Typography variant="h4" sx={{ fontWeight: 750, lineHeight: 1.15 }}>
             Controla el avance
             <br />
             de tu institucion
           </Typography>
-          <Typography variant="body1" sx={{ mt: 1.5, opacity: 0.85, maxWidth: 420 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.25, maxWidth: 400 }}>
             Centraliza la planeacion, los avances por parcial y las evidencias de
             capacitacion en una sola plataforma.
           </Typography>
         </Box>
 
-        <Stack spacing={2.5}>
+        <Stack spacing={2}>
           {BENEFICIOS.map((beneficio) => (
-            <Stack key={beneficio.titulo} direction="row" sx={{ gap: 2 }}>
+            <Stack key={beneficio.titulo} direction="row" sx={{ gap: 1.75 }}>
               <Box
                 sx={{
-                  width: 46,
-                  height: 46,
+                  width: 42,
+                  height: 42,
                   borderRadius: '13px',
-                  background: 'rgba(255, 255, 255, 0.16)',
+                  color: 'primary.main',
+                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
+                  border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -331,8 +376,10 @@ function PanelMarca() {
                 {beneficio.icono}
               </Box>
               <Box>
-                <Typography sx={{ fontWeight: 600 }}>{beneficio.titulo}</Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8, mt: 0.25 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {beneficio.titulo}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', lineHeight: 1.35, mt: 0.1 }}>
                   {beneficio.texto}
                 </Typography>
               </Box>
@@ -341,7 +388,7 @@ function PanelMarca() {
         </Stack>
       </Stack>
 
-      <Typography variant="body2" sx={{ opacity: 0.7, position: 'relative' }}>
+      <Typography variant="body2" color="text.secondary" sx={{ position: 'relative', flexShrink: 0 }}>
         Desarrollo Web Integral · UTNG · Ciclo 2026
       </Typography>
     </Box>
@@ -355,10 +402,12 @@ function SchoolMark() {
         width: 42,
         height: 42,
         borderRadius: '12px',
-        background: 'rgba(255, 255, 255, 0.18)',
+        backgroundImage: 'linear-gradient(135deg, #22D3EE 0%, #A78BFA 100%)',
+        color: '#041318',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        boxShadow: '0 12px 24px -12px rgba(34, 211, 238, 0.9)',
       }}
     >
       <GraduationCap size={24} />

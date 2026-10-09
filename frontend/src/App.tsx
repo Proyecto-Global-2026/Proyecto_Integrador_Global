@@ -7,18 +7,20 @@ import { UsuariosPage } from './pages/UsuariosPage'
 import { MateriasPage } from './pages/MateriasPage'
 import { PeriodosPage } from './pages/PeriodosPage'
 import { ParcialesPage } from './pages/ParcialesPage'
+import { PlaneacionesPage } from './pages/PlaneacionesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RoleGuard } from './routes/RoleGuard'
 import { LayoutPrivado } from './routes/LayoutPrivado'
 import { Toaster } from 'sileo'
 import 'sileo/styles.css'
-import './App.css'
+import { useTema } from './theme/contextoTema'
 
 function App() {
+  const { modo } = useTema()
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Toaster position="bottom-right" theme="light" />
+        <Toaster position="bottom-right" theme={modo} />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/oauth2/callback" element={<OAuth2CallbackPage />} />
@@ -75,6 +77,18 @@ function App() {
                 <RoleGuard roles={['COORDINADOR', 'DIRECCION']}>
                   <LayoutPrivado>
                     <ParcialesPage />
+                  </LayoutPrivado>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planeaciones"
+            element={
+              <ProtectedRoute>
+                <RoleGuard roles={['DOCENTE', 'COORDINADOR', 'DIRECCION']}>
+                  <LayoutPrivado>
+                    <PlaneacionesPage />
                   </LayoutPrivado>
                 </RoleGuard>
               </ProtectedRoute>
