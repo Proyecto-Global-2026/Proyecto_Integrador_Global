@@ -9,7 +9,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import { GraduationCap, Home, LogOut, Users } from 'lucide-react'
+import { BookOpen, CalendarRange, GraduationCap, Home, ListChecks, LogOut, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
@@ -23,6 +23,9 @@ interface OpcionMenu {
 
 const OPCIONES: OpcionMenu[] = [
   { etiqueta: 'Inicio', ruta: '/', icono: <Home size={18} />, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
+  { etiqueta: 'Materias', ruta: '/materias', icono: <BookOpen size={18} />, roles: ['COORDINADOR', 'DIRECCION'] },
+  { etiqueta: 'Periodos', ruta: '/periodos', icono: <CalendarRange size={18} />, roles: ['COORDINADOR', 'DIRECCION'] },
+  { etiqueta: 'Parciales', ruta: '/parciales', icono: <ListChecks size={18} />, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: <Users size={18} />, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
 
@@ -150,9 +153,20 @@ export function MenuPrincipal() {
             <Home size={18} style={{ marginRight: 10 }} /> Inicio
           </MenuItem>
           {usuario.rol === 'COORDINADOR' || usuario.rol === 'DIRECCION' ? (
-            <MenuItem onClick={() => { setAncla(null); navigate('/usuarios') }}>
-              <Users size={18} style={{ marginRight: 10 }} /> Usuarios
-            </MenuItem>
+            <>
+              <MenuItem onClick={() => { setAncla(null); navigate('/materias') }}>
+                <BookOpen size={18} style={{ marginRight: 10 }} /> Materias
+              </MenuItem>
+              <MenuItem onClick={() => { setAncla(null); navigate('/periodos') }}>
+                <CalendarRange size={18} style={{ marginRight: 10 }} /> Periodos
+              </MenuItem>
+              <MenuItem onClick={() => { setAncla(null); navigate('/parciales') }}>
+                <ListChecks size={18} style={{ marginRight: 10 }} /> Parciales
+              </MenuItem>
+              <MenuItem onClick={() => { setAncla(null); navigate('/usuarios') }}>
+                <Users size={18} style={{ marginRight: 10 }} /> Usuarios
+              </MenuItem>
+            </>
           ) : null}
           <Divider sx={{ my: 1 }} />
           <MenuItem onClick={cerrarSesion} sx={{ color: 'error.main' }}>
