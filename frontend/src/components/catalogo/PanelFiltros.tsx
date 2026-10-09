@@ -13,8 +13,8 @@ interface Props {
 
 export function PanelFiltros({ children, onRecargar }: Props) {
   return (
-    <Card elevation={0} sx={{ mb: 2.5, boxShadow: '0 14px 30px -26px rgba(15, 23, 42, 0.5)' }}>
-      <CardContent sx={{ p: 2 }}>
+    <Card sx={{ mb: 2.5 }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
           {children}
           {onRecargar && (

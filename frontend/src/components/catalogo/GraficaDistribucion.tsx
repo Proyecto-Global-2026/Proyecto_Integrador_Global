@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
+import { alpha, useTheme } from '@mui/material/styles'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 
 interface Props {
@@ -9,10 +10,13 @@ interface Props {
 }
 
 export function GraficaDistribucion({ activos, inactivos }: Props) {
+  const tema = useTheme()
+  const colorActivo = tema.palette.success.main
+  const colorInactivo = alpha(tema.palette.text.secondary, 0.35)
   const total = activos + inactivos
   const datos = [
-    { nombre: 'Activos', valor: activos, color: '#10b981' },
-    { nombre: 'Inactivos', valor: inactivos, color: '#cbd5e1' },
+    { nombre: 'Activos', valor: activos, color: colorActivo },
+    { nombre: 'Inactivos', valor: inactivos, color: colorInactivo },
   ]
 
   return (
@@ -22,9 +26,10 @@ export function GraficaDistribucion({ activos, inactivos }: Props) {
         alignItems: 'center',
         gap: 2,
         p: 2,
-        borderRadius: 3,
-        border: '1px solid #eef2f7',
-        background: '#fff',
+        borderRadius: '18px',
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
         minWidth: 230,
       }}
     >
@@ -32,7 +37,7 @@ export function GraficaDistribucion({ activos, inactivos }: Props) {
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
-              data={total === 0 ? [{ nombre: 'Sin datos', valor: 1, color: '#e2e8f0' }] : datos}
+              data={total === 0 ? [{ nombre: 'Sin datos', valor: 1, color: colorInactivo }] : datos}
               dataKey="valor"
               nameKey="nombre"
               innerRadius={44}
@@ -40,7 +45,7 @@ export function GraficaDistribucion({ activos, inactivos }: Props) {
               paddingAngle={total === 0 ? 0 : 3}
               stroke="none"
             >
-              {(total === 0 ? [{ color: '#e2e8f0' }] : datos).map((entrada) => (
+              {(total === 0 ? [{ color: colorInactivo }] : datos).map((entrada) => (
                 <Cell key={entrada.color} fill={entrada.color} />
               ))}
             </Pie>
@@ -57,8 +62,8 @@ export function GraficaDistribucion({ activos, inactivos }: Props) {
             pointerEvents: 'none',
           }}
         >
-          <Typography variant="h6" sx={{ lineHeight: 1 }}>
-            {total}
+          <Typography variant="h6" sx={{ lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+            {total.toLocaleString('es-MX')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Total
@@ -68,12 +73,12 @@ export function GraficaDistribucion({ activos, inactivos }: Props) {
       <Stack spacing={1.25}>
         {datos.map((d) => (
           <Stack key={d.nombre} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Box sx={{ width: 10, height: 10, borderRadius: '50%', background: d.color }} />
+            <Box sx={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: d.color }} />
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {d.nombre}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {d.valor}
+            <Typography variant="body2" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+              {d.valor.toLocaleString('es-MX')}
             </Typography>
           </Stack>
         ))}

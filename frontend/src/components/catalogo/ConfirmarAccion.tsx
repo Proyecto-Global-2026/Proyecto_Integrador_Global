@@ -5,6 +5,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import Typography from '@mui/material/Typography'
+import { alpha } from '@mui/material/styles'
 import { AlertTriangle } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -39,8 +40,8 @@ export function ConfirmarAccion({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#b45309',
-              background: '#fef3c7',
+              color: `${color}.main`,
+              backgroundColor: (theme) => alpha(theme.palette[color].main, 0.12),
             }}
           >
             <AlertTriangle size={20} />

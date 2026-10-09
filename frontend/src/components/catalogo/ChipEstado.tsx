@@ -11,14 +11,10 @@ export function ChipEstado({ activo, etiquetaActivo = 'Activo', etiquetaInactivo
   return (
     <Chip
       size="small"
-      variant="outlined"
+      variant={activo ? 'filled' : 'outlined'}
+      color={activo ? 'success' : 'default'}
       icon={activo ? <CheckCircle2 size={14} /> : <CircleSlash size={14} />}
       label={activo ? etiquetaActivo : etiquetaInactivo}
-      sx={
-        activo
-          ? { color: '#047857', borderColor: '#a7f3d0', background: '#ecfdf5' }
-          : { color: '#64748b', borderColor: '#e2e8f0', background: '#f8fafc' }
-      }
     />
   )
 }

@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
+import { alpha } from '@mui/material/styles'
 import type { ReactNode } from 'react'
 
 interface Props {
@@ -19,31 +20,33 @@ export function EncabezadoPagina({ titulo, descripcion, icono, accion }: Props) 
         borderRadius: 4,
         p: { xs: 2.5, sm: 3 },
         mb: 3,
-        color: '#fff',
-        backgroundImage: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #a855f7 100%)',
-        boxShadow: '0 26px 44px -26px rgba(99, 102, 241, 0.95)',
+        border: '1px solid',
+        borderColor: 'divider',
+        backgroundImage: (theme) =>
+          `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.16)} 0%, ${alpha('#A78BFA', 0.1)} 55%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+        backdropFilter: 'blur(10px)',
+        boxShadow: (theme) => `0 22px 44px -30px ${alpha(theme.palette.primary.main, 0.8)}`,
       }}
     >
       <Box
         sx={{
           position: 'absolute',
-          width: 240,
-          height: 240,
-          borderRadius: '50%',
-          right: -70,
-          top: -110,
-          background: 'rgba(255, 255, 255, 0.12)',
+          width: 260,
+          height: 260,
+          right: -90,
+          top: -140,
+          background: (theme) =>
+            `radial-gradient(circle at center, ${alpha(theme.palette.primary.main, 0.28)} 0%, transparent 70%)`,
         }}
       />
       <Box
         sx={{
           position: 'absolute',
-          width: 170,
-          height: 170,
-          borderRadius: '50%',
-          right: 80,
-          bottom: -120,
-          background: 'rgba(255, 255, 255, 0.08)',
+          width: 200,
+          height: 200,
+          right: 130,
+          bottom: -150,
+          background: 'radial-gradient(circle at center, rgba(167, 139, 250, 0.22) 0%, transparent 70%)',
         }}
       />
       <Stack
@@ -61,18 +64,17 @@ export function EncabezadoPagina({ titulo, descripcion, icono, accion }: Props) 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'rgba(255, 255, 255, 0.2)',
-              border: '1px solid rgba(255, 255, 255, 0.35)',
+              color: 'primary.main',
+              backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
+              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
               backdropFilter: 'blur(4px)',
             }}
           >
             {icono}
           </Box>
           <Box>
-            <Typography variant="h5" sx={{ color: '#fff' }}>
-              {titulo}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+            <Typography variant="h5">{titulo}</Typography>
+            <Typography variant="body2" color="text.secondary">
               {descripcion}
             </Typography>
           </Box>
