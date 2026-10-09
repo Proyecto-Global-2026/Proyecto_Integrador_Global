@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api } from '../api/client'
 import { AuthContext } from './contexto'
-import { clearToken, getToken, setToken, tokenExpirado } from './token'
+import { clearToken, expiracionDelToken, getToken, setToken, tokenExpirado } from './token'
 import type { AuthResponse, Usuario } from './types'
 
 function hayTokenValido(): boolean {
@@ -12,6 +12,7 @@ function hayTokenValido(): boolean {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [cargando, setCargando] = useState(hayTokenValido)
+  const [sesionExpirada, setSesionExpirada] = useState(false)
 
   const logout = useCallback(() => {
     clearToken()
@@ -45,20 +46,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [logout])
 
+  // Cierra la sesion en el instante exacto en que el JWT expira, sin esperar a
+  // que una peticion falle con 401. Se reprograma en cada inicio de sesion.
   useEffect(() => {
-    window.addEventListener('auth:expirada', logout)
-    return () => window.removeEventListener('auth:expirada', logout)
+    if (!usuario) return
+    const token = getToken()
+    if (!token) return
+    const expiracion = expiracionDelToken(token)
+    if (expiracion === null) return
+    const retraso = Math.min(Math.max(expiracion - Date.now(), 0), 2 ** 31 - 1)
+    const temporizador = window.setTimeout(() => {
+      setSesionExpirada(true)
+      logout()
+    }, retraso)
+    return () => window.clearTimeout(temporizador)
+  }, [usuario, logout])
+
+  useEffect(() => {
+    const alExpirar = () => {
+      setSesionExpirada(true)
+      logout()
+    }
+    window.addEventListener('auth:expirada', alExpirar)
+    return () => window.removeEventListener('auth:expirada', alExpirar)
   }, [logout])
 
   const login = useCallback(async (email: string, password: string) => {
     const { data } = await api.post<AuthResponse>('/api/auth/login', { email, password })
     setToken(data.token)
+    setSesionExpirada(false)
     setUsuario(data.usuario)
   }, [])
 
   const loginConToken = useCallback(
     async (token: string) => {
       setToken(token)
+      setSesionExpirada(false)
       try {
         await refrescarPerfil()
       } catch (error) {
@@ -70,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const valor = useMemo(
-    () => ({ usuario, cargando, login, loginConToken, logout }),
-    [usuario, cargando, login, loginConToken, logout],
+    () => ({ usuario, cargando, sesionExpirada, login, loginConToken, logout }),
+    [usuario, cargando, sesionExpirada, login, loginConToken, logout],
   )
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>

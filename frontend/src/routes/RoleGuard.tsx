@@ -8,9 +8,9 @@ interface Props {
 }
 
 export function RoleGuard({ children, roles }: Props) {
-  const { usuario, cargando } = useAuth()
+  const { usuario, cargando, sesionExpirada } = useAuth()
   if (cargando) return null
-  if (!usuario) return <Navigate to="/login" replace />
+  if (!usuario) return <Navigate to="/login" replace state={{ sesionExpirada }} />
   if (roles && !roles.includes(usuario.rol)) return <Navigate to="/" replace />
   return children
 }
