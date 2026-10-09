@@ -1,6 +1,6 @@
 import LogoutIcon from '@mui/icons-material/Logout'
 import { Avatar, Box, Button, Card, CardContent, Chip, Divider, Stack, Typography } from '@mui/material'
-import { CheckCircle2, Mail, ShieldCheck, Users } from 'lucide-react'
+import { BookOpen, CalendarRange, CheckCircle2, ListChecks, Mail, ShieldCheck, Users } from 'lucide-react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 
@@ -85,15 +85,48 @@ export function HomePage() {
             </Stack>
 
             {puedeVerUsuarios && (
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<Users size={18} />}
-                component={RouterLink}
-                to="/usuarios"
-              >
-                Gestionar usuarios y roles
-              </Button>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<Users size={18} />}
+                  component={RouterLink}
+                  to="/usuarios"
+                  sx={{ flex: 1 }}
+                >
+                  Usuarios
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<BookOpen size={18} />}
+                  component={RouterLink}
+                  to="/materias"
+                  sx={{ flex: 1 }}
+                >
+                  Materias
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<CalendarRange size={18} />}
+                  component={RouterLink}
+                  to="/periodos"
+                  sx={{ flex: 1 }}
+                >
+                  Periodos
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<ListChecks size={18} />}
+                  component={RouterLink}
+                  to="/parciales"
+                  sx={{ flex: 1 }}
+                >
+                  Parciales
+                </Button>
+              </Stack>
             )}
 
             <AlertSesion />
