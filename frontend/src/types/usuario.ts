@@ -1,3 +1,7 @@
+import type { Paginado } from './comun'
+
+export type { Paginado }
+
 export interface Rol {
   id: number
   nombre: string
@@ -11,14 +15,6 @@ export interface Usuario {
   rol: string
   activo: boolean
   proveedor: string | null
-}
-
-export interface Paginado<T> {
-  content: T[]
-  pagina: number
-  tamanoPagina: number
-  totalElementos: number
-  totalPaginas: number
 }
 
 export interface UsuarioCreateRequest {

@@ -1,0 +1,31 @@
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import IconButton from '@mui/material/IconButton'
+import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
+import { RefreshCw } from 'lucide-react'
+import type { ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  onRecargar?: () => void
+}
+
+export function PanelFiltros({ children, onRecargar }: Props) {
+  return (
+    <Card elevation={0} sx={{ mb: 2.5, boxShadow: '0 14px 30px -26px rgba(15, 23, 42, 0.5)' }}>
+      <CardContent sx={{ p: 2 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
+          {children}
+          {onRecargar && (
+            <Tooltip title="Recargar">
+              <IconButton onClick={onRecargar} size="small" sx={{ alignSelf: { xs: 'flex-end', sm: 'center' } }}>
+                <RefreshCw size={18} />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
+      </CardContent>
+    </Card>
+  )
+}
