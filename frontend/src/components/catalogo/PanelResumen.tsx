@@ -26,27 +26,9 @@ export function PanelResumen({ activos, inactivos }: Props) {
           gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
         }}
       >
-        <TarjetaEstadistica
-          etiqueta="Total registros"
-          valor={activos + inactivos}
-          icono={<Layers size={22} />}
-          acento="#4f46e5"
-          fondo="#eef2ff"
-        />
-        <TarjetaEstadistica
-          etiqueta="Activos"
-          valor={activos}
-          icono={<CheckCircle2 size={22} />}
-          acento="#047857"
-          fondo="#ecfdf5"
-        />
-        <TarjetaEstadistica
-          etiqueta="Inactivos"
-          valor={inactivos}
-          icono={<Archive size={22} />}
-          acento="#475569"
-          fondo="#f1f5f9"
-        />
+        <TarjetaEstadistica etiqueta="Total registros" valor={activos + inactivos} icono={<Layers size={22} />} variedad="primario" />
+        <TarjetaEstadistica etiqueta="Activos" valor={activos} icono={<CheckCircle2 size={22} />} variedad="exito" />
+        <TarjetaEstadistica etiqueta="Inactivos" valor={inactivos} icono={<Archive size={22} />} variedad="neutro" />
       </Box>
       <GraficaDistribucion activos={activos} inactivos={inactivos} />
     </Box>

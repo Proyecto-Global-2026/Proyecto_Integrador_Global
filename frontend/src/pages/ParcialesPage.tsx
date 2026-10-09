@@ -1,4 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { alpha } from '@mui/material/styles'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import dayjs from 'dayjs'
 import {
   Alert,
   Box,
@@ -214,7 +217,7 @@ export function ParcialesPage() {
       <EncabezadoPagina
         titulo="Parciales"
         descripcion="Organiza los parciales de cada periodo académico."
-        icono={<ListChecks size={26} color="#fff" />}
+        icono={<ListChecks size={26} />}
         accion={
           <BotonCabecera
             startIcon={<Plus size={18} />}
@@ -312,7 +315,7 @@ export function ParcialesPage() {
         acciones={(p) => (
           <>
             <Tooltip title="Editar">
-              <IconButton size="small" onClick={() => abrirEditar(p)} sx={{ color: '#4f46e5' }}>
+              <IconButton size="small" onClick={() => abrirEditar(p)} sx={{ color: 'primary.main' }}>
                 <Pencil size={17} />
               </IconButton>
             </Tooltip>
@@ -320,7 +323,7 @@ export function ParcialesPage() {
               <IconButton
                 size="small"
                 onClick={() => setPorConfirmar(p)}
-                sx={{ color: p.activo ? '#d97706' : '#059669' }}
+                sx={{ color: p.activo ? 'warning.main' : 'success.main' }}
               >
                 {p.activo ? <PowerOff size={17} /> : <Power size={17} />}
               </IconButton>
@@ -340,8 +343,8 @@ export function ParcialesPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#4f46e5',
-                background: '#eef2ff',
+                color: 'primary.main',
+                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
               }}
             >
               <ListChecks size={20} />
@@ -374,23 +377,41 @@ export function ParcialesPage() {
                 helperText={form.formState.errors.nombre?.message}
               />
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  label="Fecha de inicio"
-                  type="date"
-                  fullWidth
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  {...form.register('fechaInicio')}
-                  error={!!form.formState.errors.fechaInicio}
-                  helperText={form.formState.errors.fechaInicio?.message}
+                <Controller
+                  name="fechaInicio"
+                  control={form.control}
+                  render={({ field }) => (
+                    <DatePicker
+                      label="Fecha de inicio"
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(fecha) => field.onChange(fecha ? fecha.format('YYYY-MM-DD') : '')}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!form.formState.errors.fechaInicio,
+                          helperText: form.formState.errors.fechaInicio?.message,
+                        },
+                      }}
+                    />
+                  )}
                 />
-                <TextField
-                  label="Fecha de fin"
-                  type="date"
-                  fullWidth
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  {...form.register('fechaFin')}
-                  error={!!form.formState.errors.fechaFin}
-                  helperText={form.formState.errors.fechaFin?.message}
+                <Controller
+                  name="fechaFin"
+                  control={form.control}
+                  render={({ field }) => (
+                    <DatePicker
+                      label="Fecha de fin"
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(fecha) => field.onChange(fecha ? fecha.format('YYYY-MM-DD') : '')}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!form.formState.errors.fechaFin,
+                          helperText: form.formState.errors.fechaFin?.message,
+                        },
+                      }}
+                    />
+                  )}
                 />
               </Stack>
             </Stack>

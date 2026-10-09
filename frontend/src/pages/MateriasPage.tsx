@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { alpha } from '@mui/material/styles'
 import {
   Box,
   Button,
@@ -173,7 +174,7 @@ export function MateriasPage() {
       <EncabezadoPagina
         titulo="Materias"
         descripcion="Administra el catálogo de materias de la institución."
-        icono={<BookOpen size={26} color="#fff" />}
+        icono={<BookOpen size={26} />}
         accion={
           <BotonCabecera startIcon={<Plus size={18} />} onClick={abrirCrear}>
             Nueva materia
@@ -243,7 +244,7 @@ export function MateriasPage() {
         acciones={(m) => (
           <>
             <Tooltip title="Editar">
-              <IconButton size="small" onClick={() => abrirEditar(m)} sx={{ color: '#4f46e5' }}>
+              <IconButton size="small" onClick={() => abrirEditar(m)} sx={{ color: 'primary.main' }}>
                 <Pencil size={17} />
               </IconButton>
             </Tooltip>
@@ -251,7 +252,7 @@ export function MateriasPage() {
               <IconButton
                 size="small"
                 onClick={() => setPorConfirmar(m)}
-                sx={{ color: m.activo ? '#d97706' : '#059669' }}
+                sx={{ color: m.activo ? 'warning.main' : 'success.main' }}
               >
                 {m.activo ? <PowerOff size={17} /> : <Power size={17} />}
               </IconButton>
@@ -271,8 +272,8 @@ export function MateriasPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#4f46e5',
-                background: '#eef2ff',
+                color: 'primary.main',
+                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
               }}
             >
               <BookOpen size={20} />
