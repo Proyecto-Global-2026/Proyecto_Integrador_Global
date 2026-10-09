@@ -33,6 +33,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { AnimatedPage } from '../components/ui/AnimatedPage'
 import { glow, TOKENS } from '../theme'
 import { useTema } from '../theme/contextoTema'
 
@@ -337,7 +338,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </AppBar>
 
         <Box component="main" sx={{ flex: 1, minWidth: 0 }}>
-          {children}
+          <AnimatedPage key={ubicacion.pathname}>{children}</AnimatedPage>
         </Box>
 
         <Box
