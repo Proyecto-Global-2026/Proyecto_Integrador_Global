@@ -84,6 +84,20 @@ public class Planeacion {
 		this.contenido = contenido;
 	}
 
+	/**
+	 * El docente que reenvia su planeacion despues de ajustes vuelve a
+	 * PENDIENTE para una nueva revision.
+	 */
+	public void reenviarRevision() {
+		if (this.estado == EstadoPlaneacion.AJUSTES_SOLICITADOS) {
+			this.estado = EstadoPlaneacion.PENDIENTE;
+		}
+	}
+
+	public void cambiarEstado(EstadoPlaneacion estado) {
+		this.estado = estado;
+	}
+
 	public UUID getId() {
 		return id;
 	}

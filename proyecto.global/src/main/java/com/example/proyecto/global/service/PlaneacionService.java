@@ -85,9 +85,10 @@ public class PlaneacionService {
 		if (!pl.getDocente().getId().equals(idSolicitante)) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede editar su planeacion");
 		}
-		if (pl.getEstado() != EstadoPlaneacion.PENDIENTE) {
+		if (pl.getEstado() != EstadoPlaneacion.PENDIENTE
+				&& pl.getEstado() != EstadoPlaneacion.AJUSTES_SOLICITADOS) {
 			throw new BusinessRuleException(
-					"La planeacion solo puede editarse mientras este en estado PENDIENTE. Estado actual: "
+					"La planeacion solo puede editarse en estados PENDIENTE o AJUSTES_SOLICITADOS. Estado actual: "
 							+ pl.getEstado().name());
 		}
 		Materia materia = materiaActiva(request.materiaId());
@@ -95,6 +96,7 @@ public class PlaneacionService {
 		rechazarSiYaExiste(idSolicitante, materia.getId(), parcial.getId(), id);
 
 		pl.actualizar(materia, parcial, request.titulo().trim(), request.contenido().trim());
+		pl.reenviarRevision();
 		return pl;
 	}
 
