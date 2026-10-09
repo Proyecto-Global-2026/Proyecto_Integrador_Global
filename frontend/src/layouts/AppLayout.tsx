@@ -20,6 +20,7 @@ import {
   CalendarRange,
   ChevronRight,
   ChevronsLeft,
+  ClipboardCheck,
   GraduationCap,
   Home,
   ListChecks,
@@ -54,6 +55,8 @@ const OPCIONES_NAVEGACION: OpcionNavegacion[] = [
   { etiqueta: 'Materias', ruta: '/materias', icono: BookOpen, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Periodos', ruta: '/periodos', icono: CalendarRange, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Parciales', ruta: '/parciales', icono: ListChecks, roles: ['COORDINADOR', 'DIRECCION'] },
+  { etiqueta: 'Planeaciones', ruta: '/planeaciones', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
+
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
 

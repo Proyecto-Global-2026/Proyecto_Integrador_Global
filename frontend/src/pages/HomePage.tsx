@@ -26,6 +26,7 @@ const ACCESOS: AccesoRapido[] = [
   { ruta: '/periodos', titulo: 'Periodos', descripcion: 'Gestiona los periodos escolares y su activacion.', icono: CalendarRange, roles: ['COORDINADOR', 'DIRECCION'] },
   { ruta: '/parciales', titulo: 'Parciales', descripcion: 'Configura los parciales por periodo.', icono: ListChecks, roles: ['COORDINADOR', 'DIRECCION'] },
   { ruta: '/usuarios', titulo: 'Usuarios', descripcion: 'Cuentas y roles del personal academico.', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
+  { ruta: '/planeaciones', titulo: 'Planeaciones', descripcion: 'Registra y da seguimiento a tus planeaciones didacticas.', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
 ]
 
 function inicialesDe(nombre: string): string {
@@ -141,93 +142,66 @@ export function HomePage() {
         <Box>
           <Typography variant="h6">Accesos rapidos</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {esAdmin ? 'Administra los catalogos del sistema' : 'Los modulos disponibles dependen de tu rol'}
+            Accede a los modulos que corresponden a tu rol en la plataforma.
           </Typography>
           <Box
             sx={{
               display: 'grid',
               gap: 2,
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(auto-fit, minmax(250px, 1fr))' },
             }}
           >
-            {esAdmin
-              ? accesosVisibles.map((acceso) => {
-                  const Icono = acceso.icono
-                  return (
-                    <Card
-                      key={acceso.ruta}
-                      component={RouterLink}
-                      to={acceso.ruta}
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1.5,
-                        p: 2.5,
-                        textDecoration: 'none',
-                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        '&:hover': {
-                          transform: 'translateY(-3px)',
-                          boxShadow: (theme) => `0 22px 40px -26px ${alpha(theme.palette.primary.main, 0.6)}`,
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: '13px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'primary.main',
-                          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
-                        }}
-                      >
-                        <Icono size={21} />
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                          {acceso.titulo}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {acceso.descripcion}
-                        </Typography>
-                      </Box>
-                      <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, color: 'primary.main' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          Abrir
-                        </Typography>
-                        <ArrowUpRight size={17} />
-                      </Stack>
-                    </Card>
-                  )
-                })
-              : (
-                  <Card sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2, gridColumn: { xs: '1', sm: 'span 2', lg: 'span 4' } }}>
-                    <Box
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'primary.main',
-                        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
-                      }}
-                    >
-                      <ClipboardCheck size={22} />
-                    </Box>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                        Modulos docentes proximamente
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        La planeacion didactica, avances y evidencias estaran disponibles en una proxima entrega.
-                      </Typography>
-                    </Box>
-                  </Card>
-                )}
+            {accesosVisibles.map((acceso) => {
+              const Icono = acceso.icono
+              return (
+                <Card
+                  key={acceso.ruta}
+                  component={RouterLink}
+                  to={acceso.ruta}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.5,
+                    p: 2.5,
+                    textDecoration: 'none',
+                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-3px)',
+                      boxShadow: (theme) => `0 22px 40px -26px ${alpha(theme.palette.primary.main, 0.6)}`,
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'primary.main',
+                      backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
+                    }}
+                  >
+                    <Icono size={21} />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                      {acceso.titulo}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {acceso.descripcion}
+                    </Typography>
+                  </Box>
+                  <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, color: 'primary.main' }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      Abrir
+                    </Typography>
+                    <ArrowUpRight size={17} />
+                  </Stack>
+                </Card>
+              )
+            })}
           </Box>
         </Box>
       </Stack>
