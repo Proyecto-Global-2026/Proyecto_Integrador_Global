@@ -22,11 +22,36 @@ import {
   Typography,
 } from '@mui/material'
 import dayjs from 'dayjs'
-import { CheckCircle2, ClipboardCheck, Clock, Eye, Pencil, Plus, Search, X, XCircle } from 'lucide-react'
+import {
+  CheckCircle2,
+  ClipboardCheck,
+  Clock,
+  Download,
+  Eye,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  Paperclip,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  X,
+  XCircle,
+} from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { sileo } from 'sileo'
 import { z } from 'zod'
+import {
+  descargarArchivo,
+  eliminarArchivo,
+  extensionDeNombre,
+  listarArchivos,
+  subirArchivo,
+  validarArchivo,
+} from '../api/archivos'
 import { listarMaterias, listarParciales } from '../api/catalogo'
 import { actualizarPlaneacion, crearPlaneacion, listarPlaneaciones } from '../api/planeaciones'
 import { useAuth } from '../auth/useAuth'
@@ -34,9 +59,12 @@ import { SelectorPeriodoParcial } from '../components/SelectorPeriodoParcial'
 import { TablaCatalogo, type ColumnaCatalogo } from '../components/TablaCatalogo'
 import { BotonCabecera } from '../components/catalogo/BotonCabecera'
 import { ChipEstadoPlaneacion } from '../components/catalogo/ChipEstadoPlaneacion'
+import { ConfirmarAccion } from '../components/catalogo/ConfirmarAccion'
 import { EncabezadoPagina } from '../components/catalogo/EncabezadoPagina'
 import { PanelFiltros } from '../components/catalogo/PanelFiltros'
+import { SubirArchivo } from '../components/catalogo/SubirArchivo'
 import { TarjetaEstadistica } from '../components/catalogo/TarjetaEstadistica'
+import type { ArchivoPlaneacion } from '../types/archivos'
 import type { Materia } from '../types/catalogo'
 import type { EstadoPlaneacion, Planeacion } from '../types/planeaciones'
 
@@ -74,12 +102,12 @@ function formatearFecha(fecha: string): string {
   return dayjs(fecha).format('DD/MM/YYYY HH:mm')
 }
 
-function mensajeDeError(error: unknown): string {
+function mensajeDeError(error: unknown, fallback = 'No se pudo completar la accion'): string {
   if (axios.isAxiosError(error)) {
     const cuerpo = error.response?.data as { message?: string } | undefined
     if (cuerpo?.message) return cuerpo.message
   }
-  return 'No se pudo guardar la planeacion'
+  return fallback
 }
 
 export function PlaneacionesPage() {
@@ -98,6 +126,11 @@ export function PlaneacionesPage() {
   const [dialogo, setDialogo] = useState<'crear' | 'editar' | null>(null)
   const [seleccionada, setSeleccionada] = useState<Planeacion | null>(null)
   const [enDetalle, setEnDetalle] = useState<Planeacion | null>(null)
+  const [archivos, setArchivos] = useState<ArchivoPlaneacion[]>([])
+  const [cargandoArchivos, setCargandoArchivos] = useState(false)
+  const [subiendoArchivo, setSubiendoArchivo] = useState(false)
+  const [errorArchivo, setErrorArchivo] = useState<string | null>(null)
+  const [archivoAEliminar, setArchivoAEliminar] = useState<ArchivoPlaneacion | null>(null)
   const [conteos, setConteos] = useState({ enRevision: 0, aprobadas: 0, rechazadas: 0 })
   const [version, setVersion] = useState(0)
 
@@ -215,6 +248,64 @@ export function PlaneacionesPage() {
     void abrirEditar(enDetalle)
   }
 
+  const abrirDetalle = async (planeacion: Planeacion) => {
+    setEnDetalle(planeacion)
+    setErrorArchivo(null)
+    setArchivoAEliminar(null)
+    setCargandoArchivos(true)
+    try {
+      const datos = await listarArchivos(planeacion.id)
+      setArchivos(datos)
+    } catch {
+      setArchivos([])
+      sileo.error({ title: 'No se pudieron cargar los archivos' })
+    } finally {
+      setCargandoArchivos(false)
+    }
+  }
+
+  const adjuntarArchivo = async (archivo: File) => {
+    if (!enDetalle || subiendoArchivo) return
+    const motivo = validarArchivo(archivo)
+    if (motivo) {
+      setErrorArchivo(motivo)
+      return
+    }
+    setErrorArchivo(null)
+    setSubiendoArchivo(true)
+    try {
+      const creado = await subirArchivo(enDetalle.id, archivo)
+      setArchivos((prev) => [...prev, creado])
+      sileo.success({ title: 'Archivo adjuntado a la planeacion' })
+    } catch (error) {
+      sileo.error({ title: mensajeDeError(error, 'No se pudo adjuntar el archivo') })
+    } finally {
+      setSubiendoArchivo(false)
+    }
+  }
+
+  const eliminarConfirmado = async () => {
+    if (!enDetalle || !archivoAEliminar) return
+    const archivo = archivoAEliminar
+    setArchivoAEliminar(null)
+    try {
+      await eliminarArchivo(enDetalle.id, archivo.id)
+      setArchivos((prev) => prev.filter((a) => a.id !== archivo.id))
+      sileo.success({ title: 'Archivo eliminado' })
+    } catch (error) {
+      sileo.error({ title: mensajeDeError(error, 'No se pudo eliminar el archivo') })
+    }
+  }
+
+  const descargar = async (archivo: ArchivoPlaneacion) => {
+    if (!enDetalle) return
+    try {
+      await descargarArchivo(enDetalle.id, archivo)
+    } catch {
+      sileo.error({ title: 'No se pudo descargar el archivo' })
+    }
+  }
+
   const guardar = form.handleSubmit(async (valores) => {
     try {
       const payload = {
@@ -236,7 +327,7 @@ export function PlaneacionesPage() {
       await cargar()
       setVersion((v) => v + 1)
     } catch (error) {
-      sileo.error({ title: mensajeDeError(error) })
+      sileo.error({ title: mensajeDeError(error, 'No se pudo guardar la planeacion') })
     }
   })
 
@@ -382,7 +473,7 @@ export function PlaneacionesPage() {
         acciones={(p) => (
           <>
             <Tooltip title="Ver detalle">
-              <IconButton size="small" onClick={() => setEnDetalle(p)}>
+              <IconButton size="small" onClick={() => void abrirDetalle(p)}>
                 <Eye size={17} />
               </IconButton>
             </Tooltip>
@@ -517,6 +608,46 @@ export function PlaneacionesPage() {
               <DetalleCampo etiqueta="Parcial" valor={enDetalle.parcialNombre} />
               <DetalleCampo etiqueta="Titulo" valor={enDetalle.titulo} />
               <DetalleCampo etiqueta="Contenido" valor={enDetalle.contenido} />
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 0.75 }}
+                >
+                  <Paperclip size={14} /> Archivos adjuntos
+                </Typography>
+                {esDocente && (
+                  <Box sx={{ mt: 1 }}>
+                    <SubirArchivo
+                      onSeleccionar={(archivo) => void adjuntarArchivo(archivo)}
+                      error={errorArchivo}
+                      subiendo={subiendoArchivo}
+                    />
+                  </Box>
+                )}
+                <Stack spacing={1} sx={{ mt: 1.5 }}>
+                  {cargandoArchivos && (
+                    <Typography variant="body2" color="text.secondary">
+                      Cargando archivos...
+                    </Typography>
+                  )}
+                  {!cargandoArchivos && archivos.length === 0 && (
+                    <Typography variant="body2" color="text.secondary">
+                      Esta planeacion no tiene archivos adjuntos.
+                    </Typography>
+                  )}
+                  {!cargandoArchivos &&
+                    archivos.map((archivo) => (
+                      <FilaArchivo
+                        key={archivo.id}
+                        archivo={archivo}
+                        esDocente={esDocente}
+                        onDescargar={() => void descargar(archivo)}
+                        onEliminar={() => setArchivoAEliminar(archivo)}
+                      />
+                    ))}
+                </Stack>
+              </Box>
             </Stack>
           )}
         </DialogContent>
@@ -531,6 +662,21 @@ export function PlaneacionesPage() {
           )}
         </DialogActions>
       </Dialog>
+
+      <ConfirmarAccion
+        abierto={archivoAEliminar !== null}
+        titulo="Eliminar archivo adjunto"
+        mensaje={
+          <>
+            Se eliminara <strong>{archivoAEliminar?.nombreOriginal ?? 'el archivo adjunto'}</strong> de la
+            planeacion. Esta accion no se puede deshacer.
+          </>
+        }
+        textoConfirmar="Eliminar"
+        color="error"
+        onConfirmar={() => void eliminarConfirmado()}
+        onCerrar={() => setArchivoAEliminar(null)}
+      />
     </Box>
   )
 }
@@ -550,4 +696,69 @@ function DetalleCampo({ etiqueta, valor }: { etiqueta: string; valor: string }) 
       </Typography>
     </Box>
   )
+}
+
+function FilaArchivo({
+  archivo,
+  esDocente,
+  onDescargar,
+  onEliminar,
+}: {
+  archivo: ArchivoPlaneacion
+  esDocente: boolean
+  onDescargar: () => void
+  onEliminar: () => void
+}) {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        p: 1.25,
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+      }}
+    >
+      <Box sx={{ display: 'flex', color: 'primary.main' }}>{iconoDeArchivo(archivo.nombreOriginal)}</Box>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {archivo.nombreOriginal}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {formatearTamano(archivo.tamano)} · {formatearFecha(archivo.createdAt)}
+        </Typography>
+      </Box>
+      <Tooltip title="Descargar">
+        <IconButton size="small" onClick={onDescargar}>
+          <Download size={17} />
+        </IconButton>
+      </Tooltip>
+      {esDocente && (
+        <Tooltip title="Eliminar">
+          <IconButton size="small" color="error" onClick={onEliminar}>
+            <Trash2 size={17} />
+          </IconButton>
+        </Tooltip>
+      )}
+    </Box>
+  )
+}
+
+function iconoDeArchivo(nombre: string): ReactNode {
+  const extension = extensionDeNombre(nombre)
+  if (extension === 'jpg' || extension === 'jpeg' || extension === 'png') return <FileImage size={20} />
+  if (extension === 'xls' || extension === 'xlsx') return <FileSpreadsheet size={20} />
+  return <FileText size={20} />
+}
+
+function formatearTamano(tamano: number): string {
+  if (tamano < 1024) return `${tamano} B`
+  if (tamano < 1024 * 1024) return `${(tamano / 1024).toFixed(1)} KB`
+  return `${(tamano / (1024 * 1024)).toFixed(1)} MB`
 }
