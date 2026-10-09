@@ -6,6 +6,7 @@ import { OAuth2CallbackPage } from './pages/OAuth2CallbackPage'
 import { UsuariosPage } from './pages/UsuariosPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RoleGuard } from './routes/RoleGuard'
+import { LayoutPrivado } from './routes/LayoutPrivado'
 import './App.css'
 
 function App() {
@@ -19,7 +20,9 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <HomePage />
+                <LayoutPrivado>
+                  <HomePage />
+                </LayoutPrivado>
               </ProtectedRoute>
             }
           />
@@ -28,7 +31,9 @@ function App() {
             element={
               <ProtectedRoute>
                 <RoleGuard roles={['COORDINADOR', 'DIRECCION']}>
-                  <UsuariosPage />
+                  <LayoutPrivado>
+                    <UsuariosPage />
+                  </LayoutPrivado>
                 </RoleGuard>
               </ProtectedRoute>
             }

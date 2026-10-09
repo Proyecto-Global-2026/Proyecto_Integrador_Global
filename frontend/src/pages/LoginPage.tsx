@@ -4,7 +4,7 @@ import { Alert, Box, Button, Divider, IconButton, InputAdornment, Link, Stack, T
 import { Award, BarChart3, ClipboardCheck, Eye, EyeOff, GraduationCap, Lock, Mail } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import axios from 'axios'
 import { API_BASE_URL } from '../api/client'
@@ -58,10 +58,12 @@ function mensajeDeError(error: unknown): string {
 export function LoginPage() {
   const { usuario, cargando, login } = useAuth()
   const navigate = useNavigate()
+  const ubicacion = useLocation()
   const [parametros] = useSearchParams()
   const [verPassword, setVerPassword] = useState(false)
 
   const oauth2Error = parametros.get('error') === 'oauth2'
+  const sesionExpirada = (ubicacion.state as { sesionExpirada?: boolean } | null)?.sesionExpirada === true
 
   const {
     control,
@@ -141,6 +143,12 @@ export function LoginPage() {
               Inicia sesion con tu correo institucional para continuar
             </Typography>
           </Box>
+
+          {sesionExpirada && (
+            <Alert severity="warning" variant="filled">
+              Tu sesion expiro o caduco. Inicia sesion de nuevo para continuar.
+            </Alert>
+          )}
 
           {oauth2Error && (
             <Alert severity="error" variant="filled">

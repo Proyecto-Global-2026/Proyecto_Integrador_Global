@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { usuario, cargando } = useAuth()
+  const { usuario, cargando, sesionExpirada } = useAuth()
 
   if (cargando) {
     return (
@@ -15,7 +15,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!usuario) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace state={{ sesionExpirada }} />
   }
 
   return children
