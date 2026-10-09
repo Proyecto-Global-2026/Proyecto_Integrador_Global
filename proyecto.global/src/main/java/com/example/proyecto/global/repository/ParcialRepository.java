@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,9 +22,13 @@ public interface ParcialRepository extends JpaRepository<Parcial, UUID> {
 
 	List<Parcial> findByPeriodoId(UUID periodoId);
 
+	@Override
+	@EntityGraph(attributePaths = "periodo")
+	Optional<Parcial> findById(UUID id);
+
+	@EntityGraph(attributePaths = "periodo")
 	@Query("""
 			SELECT pr FROM Parcial pr
-			JOIN pr.periodo pe
 			WHERE (:periodoId IS NULL OR pr.periodo.id = :periodoId)
 			  AND (:activo IS NULL OR pr.activo = :activo)
 			  AND (:q IS NULL OR :q = '' OR LOWER(pr.nombre) LIKE LOWER(CONCAT('%', :q, '%')))
