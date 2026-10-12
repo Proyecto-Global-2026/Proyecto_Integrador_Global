@@ -59,16 +59,17 @@ public class PlaneacionService {
 
 	/**
 	 * Un docente solo ve sus planeaciones. Coordinacion y direccion pueden
-	 * consultar todas y filtrar por docente, materia o parcial.
+	 * consultar todas y filtrar por docente, materia, parcial o periodo (ciclo).
 	 */
 	@Transactional(readOnly = true)
-	public Page<Planeacion> listar(UUID docenteId, UUID materiaId, UUID parcialId, EstadoPlaneacion estado,
-			String q, String rolSolicitante, UUID idSolicitante, Pageable pageable) {
+	public Page<Planeacion> listar(UUID docenteId, UUID materiaId, UUID parcialId, UUID periodoId,
+			EstadoPlaneacion estado, String q, String rolSolicitante, UUID idSolicitante, Pageable pageable) {
 		UUID filtroDocente = docenteId;
 		if (ROL_DOCENTE.equals(rolSolicitante)) {
 			filtroDocente = idSolicitante;
 		}
-		return planeacionRepository.buscar(filtroDocente, materiaId, parcialId, estado, normalizar(q), pageable);
+		return planeacionRepository.buscar(filtroDocente, materiaId, parcialId, periodoId, estado, normalizar(q),
+				pageable);
 	}
 
 	@Transactional(readOnly = true)
