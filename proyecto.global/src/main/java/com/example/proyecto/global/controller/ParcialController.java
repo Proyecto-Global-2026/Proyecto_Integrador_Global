@@ -41,7 +41,7 @@ public class ParcialController {
 	}
 
 	@GetMapping
-	@PreAuthorize("hasAnyRole('COORDINADOR', 'DIRECCION')")
+	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Lista parciales. Filtra por periodo, texto, estado activo y rango de fechas")
 	public PaginadoResponse<ParcialResponse> listar(
 			@RequestParam(required = false) UUID periodoId,
@@ -56,7 +56,7 @@ public class ParcialController {
 	}
 
 	@GetMapping("/{id}")
-	@PreAuthorize("hasAnyRole('COORDINADOR', 'DIRECCION')")
+	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Consulta un parcial por id")
 	public ParcialResponse buscar(@PathVariable UUID id) {
 		return ParcialResponse.from(parcialService.buscarPorId(id));

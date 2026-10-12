@@ -23,15 +23,18 @@ public interface PlaneacionRepository extends JpaRepository<Planeacion, UUID> {
 			JOIN FETCH pl.docente d
 			JOIN FETCH pl.materia m
 			JOIN FETCH pl.parcial p
+			JOIN FETCH p.periodo pe
 			WHERE (:docenteId IS NULL OR d.id = :docenteId)
 			  AND (:materiaId IS NULL OR m.id = :materiaId)
 			  AND (:parcialId IS NULL OR p.id = :parcialId)
+			  AND (:periodoId IS NULL OR pe.id = :periodoId)
 			  AND (:estado IS NULL OR pl.estado = :estado)
 			  AND (:q IS NULL OR :q = '' OR LOWER(pl.titulo) LIKE LOWER(CONCAT('%', :q, '%')))
 			""")
 	Page<Planeacion> buscar(@Param("docenteId") UUID docenteId,
 			@Param("materiaId") UUID materiaId,
 			@Param("parcialId") UUID parcialId,
+			@Param("periodoId") UUID periodoId,
 			@Param("estado") EstadoPlaneacion estado,
 			@Param("q") String q,
 			Pageable pageable);
