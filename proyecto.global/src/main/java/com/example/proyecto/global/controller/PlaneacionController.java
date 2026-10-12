@@ -51,8 +51,27 @@ public class PlaneacionController {
 
 	@GetMapping
 	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
-	@Operation(summary = "Lista planeaciones. El docente solo ve las suyas; coordinacion y direccion pueden filtrar por docente, materia, parcial o estado")
+	@Operation(summary = "Lista planeaciones. El docente solo ve las suyas; coordinacion y direccion pueden filtrar por docente, materia, parcial, periodo o estado")
 	public PaginadoResponse<PlaneacionResponse> listar(
+			@RequestParam(required = false) UUID docenteId,
+			@RequestParam(required = false) UUID materiaId,
+			@RequestParam(required = false) UUID parcialId,
+			@RequestParam(required = false) UUID periodoId,
+			@RequestParam(required = false) EstadoPlaneacion estado,
+			@RequestParam(required = false) String q,
+			@AuthenticationPrincipal UsuarioPrincipal principal,
+			@PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+		return PaginadoResponse.de(planeacionService
+				.listar(docenteId, materiaId, parcialId, periodoId, estado, q, principal.getRol(), principal.getId(),
+						pageable)
+				.map(PlaneacionResponse::from));
+	}
+
+	@GetMapping("/historial")
+	@PreAuthorize("hasAnyRole('COORDINADOR', 'DIRECCION')")
+	@Operation(summary = "Historial de planeaciones de ciclos anteriores. Coordinacion y direccion pueden filtrar por periodo, docente, materia, parcial o estado")
+	public PaginadoResponse<PlaneacionResponse> historial(
+			@RequestParam(required = false) UUID periodoId,
 			@RequestParam(required = false) UUID docenteId,
 			@RequestParam(required = false) UUID materiaId,
 			@RequestParam(required = false) UUID parcialId,
@@ -61,7 +80,8 @@ public class PlaneacionController {
 			@AuthenticationPrincipal UsuarioPrincipal principal,
 			@PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
 		return PaginadoResponse.de(planeacionService
-				.listar(docenteId, materiaId, parcialId, estado, q, principal.getRol(), principal.getId(), pageable)
+				.listar(docenteId, materiaId, parcialId, periodoId, estado, q, principal.getRol(), principal.getId(),
+						pageable)
 				.map(PlaneacionResponse::from));
 	}
 

@@ -39,7 +39,7 @@ public class MateriaController {
 	}
 
 	@GetMapping
-	@PreAuthorize("hasAnyRole('COORDINADOR', 'DIRECCION')")
+	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Lista materias. Filtra por texto y por estado activo")
 	public PaginadoResponse<MateriaResponse> listar(
 			@RequestParam(required = false) String q,
@@ -49,7 +49,7 @@ public class MateriaController {
 	}
 
 	@GetMapping("/{id}")
-	@PreAuthorize("hasAnyRole('COORDINADOR', 'DIRECCION')")
+	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Consulta una materia por id")
 	public MateriaResponse buscar(@PathVariable UUID id) {
 		return MateriaResponse.from(materiaService.buscarPorId(id));

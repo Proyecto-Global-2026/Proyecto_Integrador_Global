@@ -41,7 +41,7 @@ public class PeriodoController {
 	}
 
 	@GetMapping
-	@PreAuthorize("hasAnyRole('COORDINADOR', 'DIRECCION')")
+	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Lista periodos. Filtra por texto, estado activo y rango de fechas")
 	public PaginadoResponse<PeriodoResponse> listar(
 			@RequestParam(required = false) String q,
@@ -55,7 +55,7 @@ public class PeriodoController {
 	}
 
 	@GetMapping("/{id}")
-	@PreAuthorize("hasAnyRole('COORDINADOR', 'DIRECCION')")
+	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Consulta un periodo por id")
 	public PeriodoResponse buscar(@PathVariable UUID id) {
 		return PeriodoResponse.from(periodoService.buscarPorId(id));
