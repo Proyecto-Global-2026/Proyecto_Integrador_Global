@@ -23,6 +23,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   GraduationCap,
+  History,
   Home,
   ListChecks,
   LogOut,
@@ -58,6 +59,7 @@ const OPCIONES_NAVEGACION: OpcionNavegacion[] = [
   { etiqueta: 'Parciales', ruta: '/parciales', icono: ListChecks, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Planeaciones', ruta: '/planeaciones', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Revisiones', ruta: '/revisiones', icono: ClipboardList, roles: ['COORDINADOR'] },
+  { etiqueta: 'Historial', ruta: '/historial', icono: History, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
 
