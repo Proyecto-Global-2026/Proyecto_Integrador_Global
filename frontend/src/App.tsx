@@ -8,6 +8,7 @@ import { MateriasPage } from './pages/MateriasPage'
 import { PeriodosPage } from './pages/PeriodosPage'
 import { ParcialesPage } from './pages/ParcialesPage'
 import { PlaneacionesPage } from './pages/PlaneacionesPage'
+import { RevisionesPage } from './pages/RevisionesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RoleGuard } from './routes/RoleGuard'
 import { LayoutPrivado } from './routes/LayoutPrivado'
@@ -94,8 +95,19 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          <Route
+            path="/revisiones"
+            element={
+              <ProtectedRoute>
+                <RoleGuard roles={['COORDINADOR']}>
+                  <LayoutPrivado>
+                    <RevisionesPage />
+                  </LayoutPrivado>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />        </Routes>
       </BrowserRouter>
     </AuthProvider>
   )
