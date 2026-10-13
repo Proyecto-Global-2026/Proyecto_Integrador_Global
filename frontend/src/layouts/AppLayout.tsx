@@ -21,6 +21,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ClipboardCheck,
+  ClipboardList,
   GraduationCap,
   Home,
   ListChecks,
@@ -56,6 +57,7 @@ const OPCIONES_NAVEGACION: OpcionNavegacion[] = [
   { etiqueta: 'Periodos', ruta: '/periodos', icono: CalendarRange, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Parciales', ruta: '/parciales', icono: ListChecks, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Planeaciones', ruta: '/planeaciones', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
+  { etiqueta: 'Revisiones', ruta: '/revisiones', icono: ClipboardList, roles: ['COORDINADOR'] },
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
 

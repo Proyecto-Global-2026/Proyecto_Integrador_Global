@@ -4,7 +4,7 @@ import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
-import { ArrowUpRight, BookOpen, CalendarRange, ClipboardCheck, ListChecks, ShieldCheck, Users } from 'lucide-react'
+import { ArrowUpRight, BookOpen, CalendarRange, ClipboardCheck, ClipboardList, ListChecks, ShieldCheck, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
 import { listarMaterias, listarParciales, listarPeriodos } from '../api/catalogo'
@@ -27,6 +27,7 @@ const ACCESOS: AccesoRapido[] = [
   { ruta: '/parciales', titulo: 'Parciales', descripcion: 'Configura los parciales por periodo.', icono: ListChecks, roles: ['COORDINADOR', 'DIRECCION'] },
   { ruta: '/usuarios', titulo: 'Usuarios', descripcion: 'Cuentas y roles del personal academico.', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
   { ruta: '/planeaciones', titulo: 'Planeaciones', descripcion: 'Registra y da seguimiento a tus planeaciones didacticas.', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
+  { ruta: '/revisiones', titulo: 'Revisiones', descripcion: 'Aprueba, rechaza o solicita ajustes a las planeaciones.', icono: ClipboardList, roles: ['COORDINADOR'] },
 ]
 
 function inicialesDe(nombre: string): string {
