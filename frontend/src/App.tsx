@@ -9,6 +9,7 @@ import { PeriodosPage } from './pages/PeriodosPage'
 import { ParcialesPage } from './pages/ParcialesPage'
 import { PlaneacionesPage } from './pages/PlaneacionesPage'
 import { RevisionesPage } from './pages/RevisionesPage'
+import { HistorialPage } from './pages/HistorialPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RoleGuard } from './routes/RoleGuard'
 import { LayoutPrivado } from './routes/LayoutPrivado'
@@ -102,6 +103,18 @@ function App() {
                 <RoleGuard roles={['COORDINADOR']}>
                   <LayoutPrivado>
                     <RevisionesPage />
+                  </LayoutPrivado>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/historial"
+            element={
+              <ProtectedRoute>
+                <RoleGuard roles={['COORDINADOR', 'DIRECCION']}>
+                  <LayoutPrivado>
+                    <HistorialPage />
                   </LayoutPrivado>
                 </RoleGuard>
               </ProtectedRoute>

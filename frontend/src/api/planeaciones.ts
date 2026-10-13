@@ -16,6 +16,12 @@ interface ParamsLista {
   sort?: string
 }
 
+interface ParamsHistorial extends ParamsLista {
+  periodoId?: string | null
+  docenteId?: string | null
+  parcialId?: string | null
+}
+
 export async function listarPlaneaciones(
   params: ParamsLista = {},
 ): Promise<Paginado<Planeacion>> {
@@ -24,6 +30,25 @@ export async function listarPlaneaciones(
       q: params.q || undefined,
       estado: params.estado || undefined,
       materiaId: params.materiaId || undefined,
+      page: params.page ?? 0,
+      size: params.size ?? 20,
+      sort: params.sort ?? 'createdAt,desc',
+    },
+  })
+  return respuesta.data
+}
+
+export async function listarHistorial(
+  params: ParamsHistorial = {},
+): Promise<Paginado<Planeacion>> {
+  const respuesta = await api.get<Paginado<Planeacion>>('/api/planeaciones/historial', {
+    params: {
+      q: params.q || undefined,
+      estado: params.estado || undefined,
+      materiaId: params.materiaId || undefined,
+      docenteId: params.docenteId || undefined,
+      periodoId: params.periodoId || undefined,
+      parcialId: params.parcialId || undefined,
       page: params.page ?? 0,
       size: params.size ?? 20,
       sort: params.sort ?? 'createdAt,desc',

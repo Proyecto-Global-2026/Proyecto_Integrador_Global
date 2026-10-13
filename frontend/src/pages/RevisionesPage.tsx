@@ -49,7 +49,6 @@ export function RevisionesPage() {
   const [cargando, setCargando] = useState(false)
   const [enDetalle, setEnDetalle] = useState<Planeacion | null>(null)
   const [conteos, setConteos] = useState({ pendientes: 0, aprobadas: 0, rechazadas: 0 })
-  const [version, setVersion] = useState(0)
 
   useEffect(() => {
     let cancelado = false
@@ -67,22 +66,25 @@ export function RevisionesPage() {
     }
   }, [])
 
+  const obtenerConteos = useCallback(async () => {
+    const [pendientes, aprobadas, rechazadas] = await Promise.all([
+      listarPlaneaciones({ estado: 'PENDIENTE', page: 0, size: 1 }),
+      listarPlaneaciones({ estado: 'APROBADA', page: 0, size: 1 }),
+      listarPlaneaciones({ estado: 'RECHAZADA', page: 0, size: 1 }),
+    ])
+    return {
+      pendientes: pendientes.totalElementos,
+      aprobadas: aprobadas.totalElementos,
+      rechazadas: rechazadas.totalElementos,
+    }
+  }, [])
+
   useEffect(() => {
     let cancelado = false
     const ejecutar = async () => {
       try {
-        const [pendientes, aprobadas, rechazadas] = await Promise.all([
-          listarPlaneaciones({ estado: 'PENDIENTE', page: 0, size: 1 }),
-          listarPlaneaciones({ estado: 'APROBADA', page: 0, size: 1 }),
-          listarPlaneaciones({ estado: 'RECHAZADA', page: 0, size: 1 }),
-        ])
-        if (!cancelado) {
-          setConteos({
-            pendientes: pendientes.totalElementos,
-            aprobadas: aprobadas.totalElementos,
-            rechazadas: rechazadas.totalElementos,
-          })
-        }
+        const datos = await obtenerConteos()
+        if (!cancelado) setConteos(datos)
       } catch {
         if (!cancelado) setConteos({ pendientes: 0, aprobadas: 0, rechazadas: 0 })
       }
@@ -91,7 +93,13 @@ export function RevisionesPage() {
     return () => {
       cancelado = true
     }
-  }, [version])
+  }, [obtenerConteos])
+
+  const refrescarConteos = () => {
+    void obtenerConteos()
+      .then(setConteos)
+      .catch(() => setConteos({ pendientes: 0, aprobadas: 0, rechazadas: 0 }))
+  }
 
   const cargar = useCallback(async () => {
     const datos = await listarPlaneaciones({
@@ -103,7 +111,7 @@ export function RevisionesPage() {
     })
     setPlaneaciones(datos.content)
     setTotal(datos.totalElementos)
-  }, [busqueda, filtroMateria, pagina, tamano, version])
+  }, [busqueda, filtroMateria, pagina, tamano])
 
   useEffect(() => {
     let cancelado = false
@@ -124,8 +132,12 @@ export function RevisionesPage() {
   }, [cargar])
 
   const recargar = () => {
-    setPagina(0)
-    setVersion((v) => v + 1)
+    refrescarConteos()
+    if (pagina === 0) {
+      void cargar()
+    } else {
+      setPagina(0)
+    }
   }
 
   const abrirDetalle = (planeacion: Planeacion) => {
