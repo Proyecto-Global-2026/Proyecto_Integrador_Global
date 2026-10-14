@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,6 +42,10 @@ public class Evidencia {
 
 	@Column(name = "horas_acreditadas", nullable = false)
 	private Integer horasAcreditadas;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "estado", nullable = false, length = 20)
+	private EstadoEvidencia estado = EstadoEvidencia.PENDIENTE;
 
 	@Column(name = "nombre_original", length = 255)
 	private String nombreOriginal;
@@ -92,6 +98,20 @@ public class Evidencia {
 		this.horasAcreditadas = horasAcreditadas;
 	}
 
+	/**
+	 * El docente que corrige una evidencia rechazada vuelve a PENDIENTE para
+	 * una nueva revision.
+	 */
+	public void reenviarRevision() {
+		if (this.estado == EstadoEvidencia.RECHAZADA) {
+			this.estado = EstadoEvidencia.PENDIENTE;
+		}
+	}
+
+	public void cambiarEstado(EstadoEvidencia estado) {
+		this.estado = estado;
+	}
+
 	public void adjuntarArchivo(String nombreOriginal, String nombreAlmacenado, String contentType, long tamano,
 			String ruta) {
 		this.nombreOriginal = nombreOriginal;
@@ -135,6 +155,10 @@ public class Evidencia {
 
 	public Integer getHorasAcreditadas() {
 		return horasAcreditadas;
+	}
+
+	public EstadoEvidencia getEstado() {
+		return estado;
 	}
 
 	public String getNombreOriginal() {
