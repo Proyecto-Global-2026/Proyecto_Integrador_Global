@@ -11,6 +11,7 @@ interface ParamsLista {
   q?: string | null
   estado?: EstadoPlaneacion | null
   materiaId?: string | null
+  parcialId?: string | null
   page?: number
   size?: number
   sort?: string
@@ -30,6 +31,7 @@ export async function listarPlaneaciones(
       q: params.q || undefined,
       estado: params.estado || undefined,
       materiaId: params.materiaId || undefined,
+      parcialId: params.parcialId || undefined,
       page: params.page ?? 0,
       size: params.size ?? 20,
       sort: params.sort ?? 'createdAt,desc',
