@@ -16,6 +16,7 @@ import Toolbar from '@mui/material/Toolbar'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import {
+  Award,
   BookOpen,
   CalendarRange,
   ChevronRight,
@@ -60,6 +61,7 @@ const OPCIONES_NAVEGACION: OpcionNavegacion[] = [
   { etiqueta: 'Parciales', ruta: '/parciales', icono: ListChecks, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Planeaciones', ruta: '/planeaciones', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Avances', ruta: '/avances', icono: TrendingUp, roles: ['DOCENTE'] },
+  { etiqueta: 'Evidencias', ruta: '/evidencias', icono: Award, roles: ['DOCENTE'] },
   { etiqueta: 'Revisiones', ruta: '/revisiones', icono: ClipboardList, roles: ['COORDINADOR'] },
   { etiqueta: 'Historial', ruta: '/historial', icono: History, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
