@@ -30,6 +30,7 @@ import {
   Menu as MenuIcon,
   Moon,
   Sun,
+  TrendingUp,
   Users,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -58,6 +59,7 @@ const OPCIONES_NAVEGACION: OpcionNavegacion[] = [
   { etiqueta: 'Periodos', ruta: '/periodos', icono: CalendarRange, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Parciales', ruta: '/parciales', icono: ListChecks, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Planeaciones', ruta: '/planeaciones', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
+  { etiqueta: 'Avances', ruta: '/avances', icono: TrendingUp, roles: ['DOCENTE'] },
   { etiqueta: 'Revisiones', ruta: '/revisiones', icono: ClipboardList, roles: ['COORDINADOR'] },
   { etiqueta: 'Historial', ruta: '/historial', icono: History, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
