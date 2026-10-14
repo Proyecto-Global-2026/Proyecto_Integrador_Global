@@ -11,6 +11,7 @@ import { PlaneacionesPage } from './pages/PlaneacionesPage'
 import { RevisionesPage } from './pages/RevisionesPage'
 import { HistorialPage } from './pages/HistorialPage'
 import { AvancesPage } from './pages/AvancesPage'
+import { EvidenciasPage } from './pages/EvidenciasPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RoleGuard } from './routes/RoleGuard'
 import { LayoutPrivado } from './routes/LayoutPrivado'
@@ -128,6 +129,18 @@ function App() {
                 <RoleGuard roles={['DOCENTE']}>
                   <LayoutPrivado>
                     <AvancesPage />
+                  </LayoutPrivado>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/evidencias"
+            element={
+              <ProtectedRoute>
+                <RoleGuard roles={['DOCENTE']}>
+                  <LayoutPrivado>
+                    <EvidenciasPage />
                   </LayoutPrivado>
                 </RoleGuard>
               </ProtectedRoute>

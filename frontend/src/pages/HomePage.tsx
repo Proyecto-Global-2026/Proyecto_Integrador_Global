@@ -4,7 +4,7 @@ import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
-import { ArrowUpRight, BookOpen, CalendarRange, ClipboardCheck, ClipboardList, History, ListChecks, ShieldCheck, TrendingUp, Users } from 'lucide-react'
+import { ArrowUpRight, Award, BookOpen, CalendarRange, ClipboardCheck, ClipboardList, History, ListChecks, ShieldCheck, TrendingUp, Users } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
 import { listarMaterias, listarParciales, listarPeriodos } from '../api/catalogo'
@@ -28,6 +28,7 @@ const ACCESOS: AccesoRapido[] = [
   { ruta: '/usuarios', titulo: 'Usuarios', descripcion: 'Cuentas y roles del personal academico.', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
   { ruta: '/planeaciones', titulo: 'Planeaciones', descripcion: 'Registra y da seguimiento a tus planeaciones didacticas.', icono: ClipboardCheck, roles: ['DOCENTE', 'COORDINADOR', 'DIRECCION'] },
   { ruta: '/avances', titulo: 'Avances', descripcion: 'Registra y consulta el avance de tus parciales.', icono: TrendingUp, roles: ['DOCENTE'] },
+  { ruta: '/evidencias', titulo: 'Evidencias', descripcion: 'Registra tus cursos de capacitacion y sus evidencias.', icono: Award, roles: ['DOCENTE'] },
   { ruta: '/revisiones', titulo: 'Revisiones', descripcion: 'Aprueba, rechaza o solicita ajustes a las planeaciones.', icono: ClipboardList, roles: ['COORDINADOR'] },
   { ruta: '/historial', titulo: 'Historial', descripcion: 'Consulta planeaciones de ciclos anteriores por ciclo, docente y materia.', icono: History, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
