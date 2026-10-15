@@ -9,6 +9,7 @@ import { PeriodosPage } from './pages/PeriodosPage'
 import { ParcialesPage } from './pages/ParcialesPage'
 import { PlaneacionesPage } from './pages/PlaneacionesPage'
 import { RevisionesPage } from './pages/RevisionesPage'
+import { RevisionesEvidenciasPage } from './pages/RevisionesEvidenciasPage'
 import { HistorialPage } from './pages/HistorialPage'
 import { AvancesPage } from './pages/AvancesPage'
 import { EvidenciasPage } from './pages/EvidenciasPage'
@@ -105,6 +106,18 @@ function App() {
                 <RoleGuard roles={['COORDINADOR']}>
                   <LayoutPrivado>
                     <RevisionesPage />
+                  </LayoutPrivado>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/revisiones-evidencias"
+            element={
+              <ProtectedRoute>
+                <RoleGuard roles={['COORDINADOR']}>
+                  <LayoutPrivado>
+                    <RevisionesEvidenciasPage />
                   </LayoutPrivado>
                 </RoleGuard>
               </ProtectedRoute>
