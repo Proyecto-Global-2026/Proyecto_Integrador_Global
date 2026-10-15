@@ -9,10 +9,11 @@ import { PeriodosPage } from './pages/PeriodosPage'
 import { ParcialesPage } from './pages/ParcialesPage'
 import { PlaneacionesPage } from './pages/PlaneacionesPage'
 import { RevisionesPage } from './pages/RevisionesPage'
-import { RevisionesEvidenciasPage } from './pages/RevisionesEvidenciasPage'
 import { HistorialPage } from './pages/HistorialPage'
 import { AvancesPage } from './pages/AvancesPage'
 import { EvidenciasPage } from './pages/EvidenciasPage'
+import { RevisionesEvidenciasPage } from './pages/RevisionesEvidenciasPage'
+import { DashboardPage } from './pages/DashboardPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RoleGuard } from './routes/RoleGuard'
 import { LayoutPrivado } from './routes/LayoutPrivado'
@@ -124,6 +125,18 @@ function App() {
             }
           />
           <Route
+            path="/reportes"
+            element={
+              <ProtectedRoute>
+                <RoleGuard roles={['COORDINADOR', 'DIRECCION']}>
+                  <LayoutPrivado>
+                    <DashboardPage />
+                  </LayoutPrivado>
+                </RoleGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/historial"
             element={
               <ProtectedRoute>
@@ -159,7 +172,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/" replace />} />        </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   )

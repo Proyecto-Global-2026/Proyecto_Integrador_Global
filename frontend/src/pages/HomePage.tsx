@@ -4,7 +4,21 @@ import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { alpha } from '@mui/material/styles'
-import { ArrowUpRight, Award, BadgeCheck, BookOpen, CalendarRange, ClipboardCheck, ClipboardList, History, ListChecks, ShieldCheck, TrendingUp, Users } from 'lucide-react'
+import {
+  ArrowUpRight,
+  Award,
+  BadgeCheck,
+  BarChart3,
+  BookOpen,
+  CalendarRange,
+  ClipboardCheck,
+  ClipboardList,
+  History,
+  ListChecks,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link as RouterLink } from 'react-router-dom'
 import { listarMaterias, listarParciales, listarPeriodos } from '../api/catalogo'
@@ -31,6 +45,7 @@ const ACCESOS: AccesoRapido[] = [
   { ruta: '/evidencias', titulo: 'Evidencias', descripcion: 'Registra tus cursos de capacitacion y sus evidencias.', icono: Award, roles: ['DOCENTE'] },
   { ruta: '/revisiones', titulo: 'Revisiones', descripcion: 'Aprueba, rechaza o solicita ajustes a las planeaciones.', icono: ClipboardList, roles: ['COORDINADOR'] },
   { ruta: '/revisiones-evidencias', titulo: 'Revision de evidencias', descripcion: 'Revisa y aprueba las evidencias de capacitacion de los docentes.', icono: BadgeCheck, roles: ['COORDINADOR'] },
+  { ruta: '/reportes', titulo: 'Dashboard y reportes', descripcion: 'Visualiza cumplimiento por profesor, materia y parcial.', icono: BarChart3, roles: ['COORDINADOR', 'DIRECCION'] },
   { ruta: '/historial', titulo: 'Historial', descripcion: 'Consulta planeaciones de ciclos anteriores por ciclo, docente y materia.', icono: History, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
 
