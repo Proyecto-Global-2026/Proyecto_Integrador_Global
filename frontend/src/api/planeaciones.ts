@@ -12,6 +12,7 @@ interface ParamsLista {
   estado?: EstadoPlaneacion | null
   materiaId?: string | null
   parcialId?: string | null
+  periodoId?: string | null
   page?: number
   size?: number
   sort?: string
@@ -32,12 +33,38 @@ export async function listarPlaneaciones(
       estado: params.estado || undefined,
       materiaId: params.materiaId || undefined,
       parcialId: params.parcialId || undefined,
+      periodoId: params.periodoId || undefined,
       page: params.page ?? 0,
       size: params.size ?? 20,
       sort: params.sort ?? 'createdAt,desc',
     },
   })
   return respuesta.data
+}
+
+export async function listarPlaneacionesConsolidado(
+  periodoId?: string | null,
+  size: number = 1000,
+): Promise<Planeacion[]> {
+  const params: ParamsLista = {
+    periodoId: periodoId || null,
+    page: 0,
+    size,
+    sort: 'createdAt,desc',
+  }
+  const respuesta = await api.get<Paginado<Planeacion>>('/api/planeaciones', {
+    params: {
+      q: params.q || undefined,
+      estado: params.estado || undefined,
+      materiaId: params.materiaId || undefined,
+      parcialId: params.parcialId || undefined,
+      periodoId: params.periodoId || undefined,
+      page: params.page ?? 0,
+      size: params.size ?? size,
+      sort: params.sort ?? 'createdAt,desc',
+    },
+  })
+  return respuesta.data.content
 }
 
 export async function listarHistorial(

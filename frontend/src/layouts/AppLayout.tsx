@@ -18,6 +18,7 @@ import Typography from '@mui/material/Typography'
 import {
   Award,
   BadgeCheck,
+  BarChart3,
   BookOpen,
   CalendarRange,
   ChevronRight,
@@ -65,21 +66,10 @@ const OPCIONES_NAVEGACION: OpcionNavegacion[] = [
   { etiqueta: 'Evidencias', ruta: '/evidencias', icono: Award, roles: ['DOCENTE'] },
   { etiqueta: 'Revisiones', ruta: '/revisiones', icono: ClipboardList, roles: ['COORDINADOR'] },
   { etiqueta: 'Rev. evidencias', ruta: '/revisiones-evidencias', icono: BadgeCheck, roles: ['COORDINADOR'] },
+  { etiqueta: 'Reportes', ruta: '/reportes', icono: BarChart3, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Historial', ruta: '/historial', icono: History, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
-
-function inicialesDe(nombre: string): string {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((parte) => parte.charAt(0).toUpperCase())
-    .join('')
-}
-
-function etiquetaDeRuta(ruta: string): string | null {
-  return OPCIONES_NAVEGACION.find((opcion) => opcion.ruta === ruta)?.etiqueta ?? null
-}
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { usuario, logout } = useAuth()
@@ -258,11 +248,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           }}
         >
           <Toolbar sx={{ gap: 1.25, px: { xs: 1.5, sm: 2.5 }, minHeight: 64 }}>
-            <IconButton
-              aria-label="Abrir menu"
-              onClick={() => setMovilAbierto(true)}
-              sx={{ display: { md: 'none' } }}
-            >
+            <IconButton aria-label="Abrir menu" onClick={() => setMovilAbierto(true)} sx={{ display: { md: 'none' } }}>
               <MenuIcon size={20} />
             </IconButton>
             <IconButton
@@ -276,17 +262,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
               />
             </IconButton>
 
-            <Breadcrumbs
-              aria-label="Ruta de navegacion"
-              separator={<ChevronRight size={15} />}
-              sx={{ mr: 'auto', '& .MuiBreadcrumbs-separator': { mx: 0.25 } }}
-            >
-              <Typography
-                component={RouterLink}
-                to="/"
-                variant="body2"
-                sx={{ color: 'text.secondary', fontWeight: 600, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
-              >
+            <Breadcrumbs aria-label="Ruta de navegacion" separator={<ChevronRight size={15} />} sx={{ mr: 'auto', '& .MuiBreadcrumbs-separator': { mx: 0.25 } }}>
+              <Typography component={RouterLink} to="/" variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>
                 Inicio
               </Typography>
               {rutaActual && rutaActual !== 'Inicio' && (
@@ -302,13 +279,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </IconButton>
             </Tooltip>
 
-            <IconButton
-              size="small"
-              onClick={(e) => setAncla(e.currentTarget)}
-              aria-label="Menu de usuario"
-              aria-haspopup="menu"
-              aria-expanded={ancla ? 'true' : undefined}
-            >
+            <IconButton size="small" onClick={(e) => setAncla(e.currentTarget)} aria-label="Menu de usuario" aria-haspopup="menu" aria-expanded={ancla ? 'true' : undefined}>
               <Avatar
                 sx={{
                   width: 36,
@@ -323,12 +294,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </Avatar>
             </IconButton>
 
-            <Menu
-              anchorEl={ancla}
-              open={Boolean(ancla)}
-              onClose={() => setAncla(null)}
-              slotProps={{ paper: { sx: { mt: 1.25, minWidth: 240, borderRadius: '16px', p: 1 } } }}
-            >
+            <Menu anchorEl={ancla} open={Boolean(ancla)} onClose={() => setAncla(null)} slotProps={{ paper: { sx: { mt: 1.25, minWidth: 240, borderRadius: '16px', p: 1 } } }}>
               <Box sx={{ px: 2, py: 1 }}>
                 <Typography variant="subtitle2" noWrap>
                   {usuario.nombre}
@@ -377,4 +343,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </Box>
     </Box>
   )
+}
+
+function etiquetaDeRuta(ruta: string): string | null {
+  return OPCIONES_NAVEGACION.find((opcion) => opcion.ruta === ruta)?.etiqueta ?? null
+}
+
+function inicialesDe(nombre: string): string {
+  return nombre
+    .split(' ')
+    .slice(0, 2)
+    .map((parte) => parte.charAt(0).toUpperCase())
+    .join('')
 }
