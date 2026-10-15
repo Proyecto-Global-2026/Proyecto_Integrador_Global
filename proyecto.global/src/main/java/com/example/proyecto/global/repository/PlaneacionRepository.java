@@ -1,5 +1,6 @@
 package com.example.proyecto.global.repository;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -38,4 +39,12 @@ public interface PlaneacionRepository extends JpaRepository<Planeacion, UUID> {
 			@Param("estado") EstadoPlaneacion estado,
 			@Param("q") String q,
 			Pageable pageable);
+
+	@Query("""
+			SELECT pl.estado, COUNT(pl)
+			FROM Planeacion pl
+			WHERE (:periodoId IS NULL OR pl.parcial.periodo.id = :periodoId)
+			GROUP BY pl.estado
+			""")
+	List<Object[]> contarPorEstado(@Param("periodoId") UUID periodoId);
 }
