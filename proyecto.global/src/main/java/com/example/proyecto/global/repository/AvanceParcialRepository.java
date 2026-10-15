@@ -32,4 +32,13 @@ public interface AvanceParcialRepository extends JpaRepository<AvanceParcial, UU
 			ORDER BY a.createdAt DESC
 			""")
 	List<AvanceParcial> listarPorPlaneacion(@Param("planeacionId") UUID planeacionId);
+
+	@Query("""
+			SELECT pa.id, pa.nombre, a.estado, COUNT(a)
+			FROM AvanceParcial a
+			JOIN a.parcial pa
+			WHERE (:periodoId IS NULL OR pa.periodo.id = :periodoId)
+			GROUP BY pa.id, pa.nombre, a.estado
+			""")
+	List<Object[]> contarPorParcialYEstado(@Param("periodoId") UUID periodoId);
 }
