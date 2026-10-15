@@ -1,9 +1,17 @@
 import { api } from './client'
 import type { Paginado } from '../types/comun'
-import type { Evidencia, EvidenciaForm } from '../types/evidencias'
+import type {
+  EstadoEvidencia,
+  Evidencia,
+  EvidenciaForm,
+  RevisionEvidencia,
+  RevisionEvidenciaRequest,
+} from '../types/evidencias'
 
 interface ParamsLista {
   q?: string | null
+  estado?: EstadoEvidencia | null
+  usuarioId?: string | null
   page?: number
   size?: number
   sort?: string
@@ -13,6 +21,8 @@ export async function listarEvidencias(params: ParamsLista = {}): Promise<Pagina
   const respuesta = await api.get<Paginado<Evidencia>>('/api/evidencias', {
     params: {
       q: params.q || undefined,
+      estado: params.estado || undefined,
+      usuarioId: params.usuarioId || undefined,
       page: params.page ?? 0,
       size: params.size ?? 20,
       sort: params.sort ?? 'fecha,desc',
@@ -67,4 +77,20 @@ export async function descargarEvidencia(evidencia: Evidencia): Promise<void> {
   enlace.click()
   enlace.remove()
   window.URL.revokeObjectURL(url)
+}
+
+export async function listarRevisionesEvidencia(evidenciaId: string): Promise<RevisionEvidencia[]> {
+  const respuesta = await api.get<RevisionEvidencia[]>(`/api/evidencias/${evidenciaId}/revisiones`)
+  return respuesta.data
+}
+
+export async function revisarEvidencia(
+  evidenciaId: string,
+  payload: RevisionEvidenciaRequest,
+): Promise<RevisionEvidencia> {
+  const respuesta = await api.post<RevisionEvidencia>(
+    `/api/evidencias/${evidenciaId}/revisiones`,
+    payload,
+  )
+  return respuesta.data
 }

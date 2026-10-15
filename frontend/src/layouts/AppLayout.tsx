@@ -17,6 +17,7 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import {
   Award,
+  BadgeCheck,
   BookOpen,
   CalendarRange,
   ChevronRight,
@@ -63,6 +64,7 @@ const OPCIONES_NAVEGACION: OpcionNavegacion[] = [
   { etiqueta: 'Avances', ruta: '/avances', icono: TrendingUp, roles: ['DOCENTE'] },
   { etiqueta: 'Evidencias', ruta: '/evidencias', icono: Award, roles: ['DOCENTE'] },
   { etiqueta: 'Revisiones', ruta: '/revisiones', icono: ClipboardList, roles: ['COORDINADOR'] },
+  { etiqueta: 'Rev. evidencias', ruta: '/revisiones-evidencias', icono: BadgeCheck, roles: ['COORDINADOR'] },
   { etiqueta: 'Historial', ruta: '/historial', icono: History, roles: ['COORDINADOR', 'DIRECCION'] },
   { etiqueta: 'Usuarios', ruta: '/usuarios', icono: Users, roles: ['COORDINADOR', 'DIRECCION'] },
 ]
