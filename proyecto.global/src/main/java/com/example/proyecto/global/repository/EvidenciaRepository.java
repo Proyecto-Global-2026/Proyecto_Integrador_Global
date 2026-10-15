@@ -1,5 +1,6 @@
 package com.example.proyecto.global.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,4 +32,6 @@ public interface EvidenciaRepository extends JpaRepository<Evidencia, UUID> {
 			WHERE e.id = :id
 			""")
 	Optional<Evidencia> buscarPorIdConUsuario(@Param("id") UUID id);
+
+	List<Evidencia> findByEstado(EstadoEvidencia estado);
 }
