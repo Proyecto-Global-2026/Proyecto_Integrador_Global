@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.proyecto.global.domain.Evidencia;
+import com.example.proyecto.global.domain.EstadoEvidencia;
 import com.example.proyecto.global.domain.Usuario;
 import com.example.proyecto.global.dto.EvidenciaRequest;
 import com.example.proyecto.global.dto.EvidenciaResponse;
@@ -67,13 +68,13 @@ public class EvidenciaService {
 	 * consultar todas y filtrar por docente.
 	 */
 	@Transactional(readOnly = true)
-	public Page<Evidencia> listar(UUID usuarioId, String q, String rolSolicitante, UUID idSolicitante,
-			Pageable pageable) {
+	public Page<Evidencia> listar(UUID usuarioId, EstadoEvidencia estado, String q, String rolSolicitante,
+			UUID idSolicitante, Pageable pageable) {
 		UUID filtroUsuario = usuarioId;
 		if (ROL_DOCENTE.equals(rolSolicitante)) {
 			filtroUsuario = idSolicitante;
 		}
-		return evidenciaRepository.buscar(filtroUsuario, normalizar(q), pageable);
+		return evidenciaRepository.buscar(filtroUsuario, estado, normalizar(q), pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -102,6 +103,7 @@ public class EvidenciaService {
 				storageService.eliminar(anterior);
 			}
 		}
+		evidencia.reenviarRevision();
 		return EvidenciaResponse.from(evidencia);
 	}
 

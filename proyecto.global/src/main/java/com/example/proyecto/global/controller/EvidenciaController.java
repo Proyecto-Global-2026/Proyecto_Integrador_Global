@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.proyecto.global.dto.EvidenciaRequest;
 import com.example.proyecto.global.dto.EvidenciaResponse;
 import com.example.proyecto.global.dto.PaginadoResponse;
+import com.example.proyecto.global.domain.EstadoEvidencia;
 import com.example.proyecto.global.security.UsuarioPrincipal;
 import com.example.proyecto.global.service.EvidenciaService;
 
@@ -60,11 +61,12 @@ public class EvidenciaController {
 	@Operation(summary = "Lista evidencias. El docente solo ve las suyas; coordinacion y direccion pueden filtrar por docente")
 	public PaginadoResponse<EvidenciaResponse> listar(
 			@RequestParam(required = false) UUID usuarioId,
+			@RequestParam(required = false) EstadoEvidencia estado,
 			@RequestParam(required = false) String q,
 			@AuthenticationPrincipal UsuarioPrincipal principal,
 			@PageableDefault(size = 20, sort = "fecha") Pageable pageable) {
 		return PaginadoResponse.de(evidenciaService
-				.listar(usuarioId, q, principal.getRol(), principal.getId(), pageable)
+				.listar(usuarioId, estado, q, principal.getRol(), principal.getId(), pageable)
 				.map(EvidenciaResponse::from));
 	}
 
