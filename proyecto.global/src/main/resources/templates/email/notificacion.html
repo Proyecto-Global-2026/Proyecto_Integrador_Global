@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notificación</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+	<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;padding:24px 0;">
+		<tr>
+			<td align="center">
+				<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+					<tr>
+						<td style="background-color:#1d4ed8;padding:20px 28px;">
+							<h1 style="margin:0;font-size:20px;color:#ffffff;">Proyecto Global</h1>
+						</td>
+					</tr>
+					<tr>
+						<td style="padding:28px;">
+							<p style="margin:0 0 16px;font-size:15px;">
+								Hola, <strong th:text="${nombre}">Docente</strong>:
+							</p>
+							<p style="margin:0 0 18px;font-size:15px;">
+								Tu <strong th:text="${tipo}">planeación</strong> cambió de estado a
+								<span th:text="${estadoNuevo}" th:style="'font-weight:bold;color:' + ${colorEstado}">Aprobada</span>.
+							</p>
+
+							<table role="presentation" width="100%" cellpadding="8" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:6px;font-size:14px;">
+								<tr>
+									<td style="color:#6b7280;width:150px;">Detalle</td>
+									<td th:text="${descripcion}" style="font-weight:600;">Planeación</td>
+								</tr>
+								<tr style="background-color:#f9fafb;">
+									<td style="color:#6b7280;">Estado anterior</td>
+									<td th:text="${estadoAnterior}">Pendiente</td>
+								</tr>
+								<tr>
+									<td style="color:#6b7280;">Estado actual</td>
+									<td th:text="${estadoNuevo}" style="font-weight:600;">Aprobada</td>
+								</tr>
+								<tr style="background-color:#f9fafb;">
+									<td style="color:#6b7280;">Revisado por</td>
+									<td th:text="${revisor}">Coordinación</td>
+								</tr>
+								<tr>
+									<td style="color:#6b7280;">Fecha</td>
+									<td th:text="${fecha}">01/01/2026 10:00</td>
+								</tr>
+							</table>
+
+							<div th:if="${comentario != null}" style="margin-top:18px;padding:14px 16px;background-color:#f9fafb;border-left:4px solid #1d4ed8;">
+								<p style="margin:0 0 6px;font-size:13px;color:#6b7280;">Comentario del revisor</p>
+								<p style="margin:0;font-size:14px;" th:text="${comentario}">Sin comentarios.</p>
+							</div>
+
+							<p style="margin:20px 0 0;font-size:13px;color:#6b7280;">
+								Este es un mensaje automático, por favor no respondas a este correo.
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color:#f9fafb;padding:16px 28px;">
+							<p style="margin:0;font-size:12px;color:#9ca3af;">Proyecto Global · Notificaciones automáticas</p>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
