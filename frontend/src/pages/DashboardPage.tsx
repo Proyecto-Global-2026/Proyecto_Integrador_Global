@@ -1,4 +1,6 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import FormControl from '@mui/material/FormControl'
@@ -8,9 +10,7 @@ import Select from '@mui/material/Select'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { alpha, useTheme } from '@mui/material/styles'
-import Button from '@mui/material/Button'
-import { BarChart3, ClipboardCheck, History, RefreshCw, TrendingUp, Users } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { BarChart3, Download, FileDown, RefreshCw } from 'lucide-react'
 import { sileo } from 'sileo'
 import { obtenerReporteAvances, obtenerReporteCursos, obtenerReportePlaneaciones } from '../api/reportes'
 import { listarPlaneacionesConsolidado } from '../api/planeaciones'
@@ -21,6 +21,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import type { Periodo } from '../types/catalogo'
 import type { Planeacion } from '../types/planeaciones'
 import type { ReporteAvances, ReporteCursos, ReportePlaneaciones } from '../types/reportes'
+import { exportarExcel, exportarPdf } from '../utils/reportesExport'
+import type { TablaReporte } from '../utils/reportesExport'
 
 export function DashboardPage() {
   const [periodos, setPeriodos] = useState<Periodo[]>([])
@@ -32,6 +34,11 @@ export function DashboardPage() {
   const [repAvances, setRepAvances] = useState<ReporteAvances | null>(null)
   const [repCursos, setRepCursos] = useState<ReporteCursos | null>(null)
   const [consolidado, setConsolidado] = useState<Planeacion[]>([])
+
+  const periodoNombre = useMemo(
+    () => periodos.find((p) => p.id === periodoId)?.nombre || 'Todos los periodos',
+    [periodos, periodoId]
+  )
 
   useEffect(() => {
     let cancelado = false
@@ -75,11 +82,7 @@ export function DashboardPage() {
   useEffect(() => {
     let cancelado = false
     void (async () => {
-      try {
-        if (!cancelado) await cargar()
-      } catch {
-        // ignorar
-      }
+      if (!cancelado) await cargar()
     })()
     return () => {
       cancelado = true
@@ -96,10 +99,7 @@ export function DashboardPage() {
       map.set(key, acc)
     }
     return Array.from(map.entries())
-      .map(([profesor, acc]) => ({
-        profesor,
-        cumplimiento: acc.total === 0 ? 0 : Math.round((acc.aprobadas / acc.total) * 100),
-      }))
+      .map(([profesor, acc]) => ({ profesor, cumplimiento: acc.total === 0 ? 0 : Math.round((acc.aprobadas / acc.total) * 100) }))
       .sort((a, b) => b.cumplimiento - a.cumplimiento)
       .slice(0, 10)
   }, [consolidado])
@@ -114,52 +114,201 @@ export function DashboardPage() {
       map.set(key, acc)
     }
     return Array.from(map.entries())
-      .map(([materia, acc]) => ({
-        materia: materia.length > 25 ? `${materia.substring(0, 25)}...` : materia,
-        cumplimiento: acc.total === 0 ? 0 : Math.round((acc.aprobadas / acc.total) * 100),
-      }))
+      .map(([materia, acc]) => ({ materia: materia.length > 25 ? `${materia.substring(0, 25)}...` : materia, cumplimiento: acc.total === 0 ? 0 : Math.round((acc.aprobadas / acc.total) * 100) }))
       .sort((a, b) => b.cumplimiento - a.cumplimiento)
       .slice(0, 10)
   }, [consolidado])
 
+  const descargarPdf = useCallback((tipo: 'planeaciones' | 'avances' | 'cursos') => {
+    const generado = new Date().toLocaleString('es-MX')
+    let tabla: TablaReporte | null = null
+
+    if (tipo === 'planeaciones' && repPlaneaciones) {
+      tabla = {
+        titulo: 'Reporte de cumplimiento de planeaciones',
+        periodo: periodoNombre,
+        encabezados: ['Estado', 'Cantidad'],
+        filas: [
+          ['Aprobadas', repPlaneaciones.aprobadas],
+          ['Rechazadas', repPlaneaciones.rechazadas],
+          ['Pendientes', repPlaneaciones.pendientes],
+          ['Ajustes solicitados', repPlaneaciones.ajustesSolicitados],
+          ['Total', repPlaneaciones.total]
+        ],
+        resumen: [
+          `Total de planeaciones: ${repPlaneaciones.total}`,
+          `Aprobadas: ${repPlaneaciones.aprobadas}`,
+          `Rechazadas: ${repPlaneaciones.rechazadas}`,
+          `Pendientes: ${repPlaneaciones.pendientes}`,
+          `Ajustes solicitados: ${repPlaneaciones.ajustesSolicitados}`,
+          `Porcentaje de cumplimiento: ${repPlaneaciones.porcentajeCumplimiento}%`
+        ],
+        generado
+      }
+    }
+
+    if (tipo === 'avances' && repAvances) {
+      tabla = {
+        titulo: 'Reporte de cumplimiento de avances por parcial',
+        periodo: periodoNombre,
+        encabezados: ['Parcial', 'Total', 'Cumplidos', 'Parciales', 'No cumplidos', 'Cumplimiento'],
+        filas: repAvances.parciales.map((p) => [
+          p.parcialNombre,
+          p.total,
+          p.cumplidos,
+          p.parciales,
+          p.noCumplidos,
+          `${p.porcentajeCumplimiento.toFixed(2)}%`
+        ]),
+        resumen: [
+          `Total de avances: ${repAvances.totalAvances}`,
+          `Porcentaje de cumplimiento global: ${repAvances.porcentajeCumplimiento}%`
+        ],
+        generado
+      }
+    }
+
+    if (tipo === 'cursos' && repCursos) {
+      tabla = {
+        titulo: 'Reporte de cursos acreditados por periodo',
+        periodo: periodoNombre,
+        encabezados: ['Periodo', 'Cursos acreditados', 'Horas acreditadas'],
+        filas: repCursos.periodos.map((p) => [
+          p.periodoNombre,
+          p.cursosAcreditados,
+          p.horasAcreditadas
+        ]),
+        resumen: [
+          `Total de cursos acreditados: ${repCursos.totalCursos}`,
+          `Total de horas acreditadas: ${repCursos.totalHoras}`
+        ],
+        generado
+      }
+    }
+
+    if (!tabla) {
+      sileo.warning({ title: 'No hay datos para exportar' })
+      return
+    }
+
+    exportarPdf(tabla, `reporte-${tipo}.pdf`)
+  }, [repAvances, repCursos, repPlaneaciones, periodoNombre])
+
+  const descargarExcel = useCallback((tipo: 'planeaciones' | 'avances' | 'cursos') => {
+    const generado = new Date().toLocaleString('es-MX')
+    let tabla: TablaReporte | null = null
+
+    if (tipo === 'planeaciones' && repPlaneaciones) {
+      tabla = {
+        titulo: 'Reporte de cumplimiento de planeaciones',
+        periodo: periodoNombre,
+        encabezados: ['Estado', 'Cantidad'],
+        filas: [
+          ['Aprobadas', repPlaneaciones.aprobadas],
+          ['Rechazadas', repPlaneaciones.rechazadas],
+          ['Pendientes', repPlaneaciones.pendientes],
+          ['Ajustes solicitados', repPlaneaciones.ajustesSolicitados],
+          ['Total', repPlaneaciones.total]
+        ],
+        resumen: [
+          `Total de planeaciones: ${repPlaneaciones.total}`,
+          `Aprobadas: ${repPlaneaciones.aprobadas}`,
+          `Rechazadas: ${repPlaneaciones.rechazadas}`,
+          `Pendientes: ${repPlaneaciones.pendientes}`,
+          `Ajustes solicitados: ${repPlaneaciones.ajustesSolicitados}`,
+          `Porcentaje de cumplimiento: ${repPlaneaciones.porcentajeCumplimiento}%`
+        ],
+        generado
+      }
+    }
+
+    if (tipo === 'avances' && repAvances) {
+      tabla = {
+        titulo: 'Reporte de cumplimiento de avances por parcial',
+        periodo: periodoNombre,
+        encabezados: ['Parcial', 'Total', 'Cumplidos', 'Parciales', 'No cumplidos', 'Cumplimiento'],
+        filas: repAvances.parciales.map((p) => [
+          p.parcialNombre,
+          p.total,
+          p.cumplidos,
+          p.parciales,
+          p.noCumplidos,
+          `${p.porcentajeCumplimiento.toFixed(2)}%`
+        ]),
+        resumen: [
+          `Total de avances: ${repAvances.totalAvances}`,
+          `Porcentaje de cumplimiento global: ${repAvances.porcentajeCumplimiento}%`
+        ],
+        generado
+      }
+    }
+
+    if (tipo === 'cursos' && repCursos) {
+      tabla = {
+        titulo: 'Reporte de cursos acreditados por periodo',
+        periodo: periodoNombre,
+        encabezados: ['Periodo', 'Cursos acreditados', 'Horas acreditadas'],
+        filas: repCursos.periodos.map((p) => [
+          p.periodoNombre,
+          p.cursosAcreditados,
+          p.horasAcreditadas
+        ]),
+        resumen: [
+          `Total de cursos acreditados: ${repCursos.totalCursos}`,
+          `Total de horas acreditadas: ${repCursos.totalHoras}`
+        ],
+        generado
+      }
+    }
+
+    if (!tabla) {
+      sileo.warning({ title: 'No hay datos para exportar' })
+      return
+    }
+
+    exportarExcel(tabla, `reporte-${tipo}.xlsx`)
+  }, [repAvances, repCursos, repPlaneaciones, periodoNombre])
+
   return (
     <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1400, mx: 'auto' }}>
-      <EncabezadoPagina titulo="Dashboard y reportes" descripcion="Vista consolidada con gráficas de cumplimiento por profesor, materia y parcial." icono={<BarChart3 size={26} />} />
+      <EncabezadoPagina titulo="Dashboard y reportes" descripcion="Filtra y descarga los reportes institucionales." icono={<BarChart3 size={26} />} />
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' }, flexWrap: 'wrap' }}>
             <FormControl size="small" sx={{ minWidth: 220 }}>
               <InputLabel>Periodo (ciclo)</InputLabel>
               <Select value={periodoId} label="Periodo (ciclo)" onChange={(e) => setPeriodoId(e.target.value)}>
                 <MenuItem value="">Todos los periodos</MenuItem>
                 {periodos.map((pe) => (
-                  <MenuItem key={pe.id} value={pe.id}>
-                    {pe.nombre}
-                  </MenuItem>
+                  <MenuItem key={pe.id} value={pe.id}>{pe.nombre}</MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <Button onClick={() => void cargar()} disabled={cargando} variant="outlined" startIcon={<RefreshCw size={16} />}>
-              {cargando ? 'Actualizando...' : 'Actualizar'}
-            </Button>
+            <Button onClick={() => void cargar()} disabled={cargando} variant="outlined" startIcon={<RefreshCw size={16} />}>{cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+              <Button size="small" variant="outlined" startIcon={<FileDown size={16} />} onClick={() => descargarPdf('planeaciones')}>PDF Planeaciones</Button>
+              <Button size="small" variant="outlined" startIcon={<Download size={16} />} onClick={() => descargarExcel('planeaciones')}>Excel Planeaciones</Button>
+              <Button size="small" variant="outlined" startIcon={<FileDown size={16} />} onClick={() => descargarPdf('avances')}>PDF Avances</Button>
+              <Button size="small" variant="outlined" startIcon={<Download size={16} />} onClick={() => descargarExcel('avances')}>Excel Avances</Button>
+              <Button size="small" variant="outlined" startIcon={<FileDown size={16} />} onClick={() => descargarPdf('cursos')}>PDF Cursos</Button>
+              <Button size="small" variant="outlined" startIcon={<Download size={16} />} onClick={() => descargarExcel('cursos')}>Excel Cursos</Button>
+            </Stack>
           </Stack>
         </CardContent>
       </Card>
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, mb: 3 }}>
-        <TarjetaEstadistica etiqueta="Total planeaciones" valor={repPlaneaciones?.total ?? 0} icono={<ClipboardCheck size={22} />} variedad="primario" />
-        <TarjetaEstadistica etiqueta="% Cumplimiento" valor={repPlaneaciones?.porcentajeCumplimiento ?? 0} icono={<TrendingUp size={22} />} variedad="exito" />
-        <TarjetaEstadistica etiqueta="Avances totales" valor={repAvances?.totalAvances ?? 0} icono={<History size={22} />} variedad="neutro" />
-        <TarjetaEstadistica etiqueta="Cursos acreditados" valor={repCursos?.totalCursos ?? 0} icono={<Users size={22} />} variedad="primario" />
+        <TarjetaEstadistica etiqueta="Total planeaciones" valor={repPlaneaciones?.total ?? 0} icono={<BarChart3 size={22} />} variedad="primario" />
+        <TarjetaEstadistica etiqueta="% Cumplimiento" valor={repPlaneaciones?.porcentajeCumplimiento ?? 0} icono={<RefreshCw size={22} />} variedad="exito" />
+        <TarjetaEstadistica etiqueta="Avances totales" valor={repAvances?.totalAvances ?? 0} icono={<BarChart3 size={22} />} variedad="neutro" />
+        <TarjetaEstadistica etiqueta="Cursos acreditados" valor={repCursos?.totalCursos ?? 0} icono={<BarChart3 size={22} />} variedad="primario" />
       </Box>
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Cumplimiento por profesor (top 10)
-            </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>Cumplimiento por profesor (top 10)</Typography>
             <Box sx={{ height: 360 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={datosPorProfesor} layout="vertical">
@@ -177,9 +326,7 @@ export function DashboardPage() {
 
         <Card>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Cumplimiento por materia (top 10)
-            </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>Cumplimiento por materia (top 10)</Typography>
             <Box sx={{ height: 360 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={datosPorMateria}>
@@ -197,9 +344,7 @@ export function DashboardPage() {
 
         <Card sx={{ gridColumn: { xs: '1 / -1' } }}>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Cumplimiento por parcial
-            </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>Cumplimiento por parcial</Typography>
             <Box sx={{ height: 380 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={repAvances?.parciales ?? []}>
@@ -218,9 +363,7 @@ export function DashboardPage() {
 
         <Card sx={{ gridColumn: { xs: '1 / -1' } }}>
           <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Cursos acreditados por periodo (institucional)
-            </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>Cursos acreditados por periodo (institucional)</Typography>
             <Box sx={{ height: 360 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={repCursos?.periodos ?? []}>
