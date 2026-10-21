@@ -42,6 +42,18 @@ public class ArchivoPlaneacion {
 	@Column(name = "ruta", nullable = false, length = 500)
 	private String ruta;
 
+	@Column(name = "proveedor_almacenamiento", length = 30)
+	private String proveedorAlmacenamiento = "local";
+
+	@Column(name = "public_id", length = 255)
+	private String publicId;
+
+	@Column(name = "resource_type", length = 30)
+	private String resourceType;
+
+	@Column(name = "tipo_entrega", length = 30)
+	private String tipoEntrega = "upload";
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private OffsetDateTime createdAt;
 
@@ -56,6 +68,22 @@ public class ArchivoPlaneacion {
 		this.contentType = contentType;
 		this.tamano = tamano;
 		this.ruta = ruta;
+		this.proveedorAlmacenamiento = "local";
+	}
+
+	public ArchivoPlaneacion(Planeacion planeacion, String nombreOriginal, String nombreAlmacenado,
+			String contentType, long tamano, String ruta, String proveedorAlmacenamiento, String publicId,
+			String resourceType, String tipoEntrega) {
+		this.planeacion = planeacion;
+		this.nombreOriginal = nombreOriginal;
+		this.nombreAlmacenado = nombreAlmacenado;
+		this.contentType = contentType;
+		this.tamano = tamano;
+		this.ruta = ruta;
+		this.proveedorAlmacenamiento = proveedorAlmacenamiento == null ? "local" : proveedorAlmacenamiento;
+		this.publicId = publicId;
+		this.resourceType = resourceType;
+		this.tipoEntrega = tipoEntrega == null ? "upload" : tipoEntrega;
 	}
 
 	@PrePersist
@@ -89,6 +117,38 @@ public class ArchivoPlaneacion {
 
 	public String getRuta() {
 		return ruta;
+	}
+
+	public String getProveedorAlmacenamiento() {
+		return proveedorAlmacenamiento;
+	}
+
+	public void setProveedorAlmacenamiento(String proveedorAlmacenamiento) {
+		this.proveedorAlmacenamiento = proveedorAlmacenamiento;
+	}
+
+	public String getPublicId() {
+		return publicId;
+	}
+
+	public void setPublicId(String publicId) {
+		this.publicId = publicId;
+	}
+
+	public String getResourceType() {
+		return resourceType;
+	}
+
+	public void setResourceType(String resourceType) {
+		this.resourceType = resourceType;
+	}
+
+	public String getTipoEntrega() {
+		return tipoEntrega;
+	}
+
+	public void setTipoEntrega(String tipoEntrega) {
+		this.tipoEntrega = tipoEntrega;
 	}
 
 	public OffsetDateTime getCreatedAt() {

@@ -30,6 +30,9 @@ import com.example.proyecto.global.dto.PaginadoResponse;
 import com.example.proyecto.global.domain.EstadoEvidencia;
 import com.example.proyecto.global.security.UsuarioPrincipal;
 import com.example.proyecto.global.service.EvidenciaService;
+import com.example.proyecto.global.config.StorageProperties;
+import com.example.proyecto.global.storage.StorageService;
+import java.time.Duration;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,9 +44,16 @@ import jakarta.validation.Valid;
 public class EvidenciaController {
 
 	private final EvidenciaService evidenciaService;
+	private final StorageService storageService;
+	private final StorageProperties properties;
+	private final com.example.proyecto.global.repository.EvidenciaRepository evidenciaRepository;
 
-	public EvidenciaController(EvidenciaService evidenciaService) {
+	public EvidenciaController(EvidenciaService evidenciaService, StorageService storageService,
+			StorageProperties properties, com.example.proyecto.global.repository.EvidenciaRepository evidenciaRepository) {
 		this.evidenciaService = evidenciaService;
+		this.storageService = storageService;
+		this.properties = properties;
+		this.evidenciaRepository = evidenciaRepository;
 	}
 
 	@PostMapping
@@ -91,8 +101,29 @@ public class EvidenciaController {
 	@GetMapping("/{id}/archivo")
 	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Descarga el archivo adjunto de una evidencia")
-	public ResponseEntity<InputStreamResource> descargarArchivo(@PathVariable UUID id,
+	public ResponseEntity<?> descargarArchivo(@PathVariable UUID id,
 			@AuthenticationPrincipal UsuarioPrincipal principal) throws IOException {
+		com.example.proyecto.global.domain.Evidencia evidencia = evidenciaRepository.buscarPorIdConUsuario(id)
+				.orElseThrow(() -> new com.example.proyecto.global.exception.ResourceNotFoundException(
+						"Evidencia no encontrada: " + id));
+		boolean esPropietario = evidencia.getUsuario().getId().equals(principal.getId());
+		boolean esRevision = "COORDINADOR".equals(principal.getRol()) || "DIRECCION".equals(principal.getRol());
+		if (!esPropietario && !esRevision) {
+			throw new org.springframework.security.authorization.AuthorizationDeniedException(
+					"No tienes permisos para consultar esta evidencia");
+		}
+		if (!evidencia.tieneArchivo()) {
+			throw new com.example.proyecto.global.exception.ResourceNotFoundException(
+					"La evidencia no tiene archivo adjunto: " + id);
+		}
+		if (evidencia.getPublicId() != null && !"local".equalsIgnoreCase(evidencia.getProveedorAlmacenamiento())) {
+			String url = storageService.generarUrlDescargaSegura(evidencia.getPublicId(),
+					evidencia.getResourceType(), evidencia.getTipoEntrega(), evidencia.getNombreOriginal(),
+					Duration.ofMinutes(properties.cloudinary().duracionUrlMinutos()));
+			if (url != null) {
+				return ResponseEntity.status(302).header(HttpHeaders.LOCATION, url).build();
+			}
+		}
 		EvidenciaService.Descarga descarga = evidenciaService.descargarArchivo(id, principal.getRol(),
 				principal.getId());
 		InputStreamResource recurso = new InputStreamResource(descarga.contenido());

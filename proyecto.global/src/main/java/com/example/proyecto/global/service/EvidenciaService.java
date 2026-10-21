@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.example.proyecto.global.domain.Evidencia;
 import com.example.proyecto.global.domain.EstadoEvidencia;
 import com.example.proyecto.global.domain.Usuario;
@@ -23,10 +26,14 @@ import com.example.proyecto.global.exception.BusinessRuleException;
 import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.EvidenciaRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
-import com.example.proyecto.global.service.storage.FileStorageService;
+import com.example.proyecto.global.config.StorageProperties;
+import com.example.proyecto.global.storage.ArchivoReferencia;
+import com.example.proyecto.global.storage.StorageService;
 
 @Service
 public class EvidenciaService {
+
+	private static final Logger log = LoggerFactory.getLogger(EvidenciaService.class);
 
 	private static final String ROL_DOCENTE = "DOCENTE";
 	private static final String ROL_COORDINADOR = "COORDINADOR";
@@ -37,16 +44,19 @@ public class EvidenciaService {
 
 	private final EvidenciaRepository evidenciaRepository;
 	private final UsuarioRepository usuarioRepository;
-	private final FileStorageService storageService;
+	private final StorageService storageService;
+	private final StorageProperties properties;
 	private final long maxTamanoBytes;
 
 	public EvidenciaService(EvidenciaRepository evidenciaRepository,
 			UsuarioRepository usuarioRepository,
-			FileStorageService storageService,
+			StorageService storageService,
+			StorageProperties properties,
 			@Value("${app.storage.max-tamano-bytes:10485760}") long maxTamanoBytes) {
 		this.evidenciaRepository = evidenciaRepository;
 		this.usuarioRepository = usuarioRepository;
 		this.storageService = storageService;
+		this.properties = properties;
 		this.maxTamanoBytes = maxTamanoBytes;
 	}
 
@@ -98,9 +108,18 @@ public class EvidenciaService {
 				request.horasAcreditadas());
 		if (archivo != null && !archivo.isEmpty()) {
 			String anterior = evidencia.getNombreAlmacenado();
+			String proveedorAnterior = evidencia.getProveedorAlmacenamiento();
+			String publicIdAnterior = evidencia.getPublicId();
+			String resourceTypeAnterior = evidencia.getResourceType();
+			String tipoEntregaAnterior = evidencia.getTipoEntrega();
 			adjuntarSiCorresponde(evidencia, archivo);
 			if (anterior != null) {
-				storageService.eliminar(anterior);
+				if (publicIdAnterior != null && !"local".equalsIgnoreCase(proveedorAnterior)) {
+					try {
+						storageService.eliminar(publicIdAnterior, resourceTypeAnterior, tipoEntregaAnterior);
+					} catch (Exception ignored) {
+					}
+				}
 			}
 		}
 		evidencia.reenviarRevision();
@@ -117,7 +136,13 @@ public class EvidenciaService {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede eliminar su evidencia");
 		}
 		if (evidencia.tieneArchivo()) {
-			storageService.eliminar(evidencia.getNombreAlmacenado());
+			if (evidencia.getPublicId() != null && !"local".equalsIgnoreCase(evidencia.getProveedorAlmacenamiento())) {
+				try {
+					storageService.eliminar(evidencia.getPublicId(), evidencia.getResourceType(),
+							evidencia.getTipoEntrega());
+				} catch (Exception ignored) {
+				}
+			}
 		}
 		evidenciaRepository.delete(evidencia);
 	}
@@ -132,11 +157,23 @@ public class EvidenciaService {
 		if (!evidencia.tieneArchivo()) {
 			throw new ResourceNotFoundException("La evidencia no tiene archivo adjunto: " + id);
 		}
+		java.io.InputStream contenido = null;
+		try {
+			if (evidencia.getPublicId() != null && !"local".equalsIgnoreCase(evidencia.getProveedorAlmacenamiento())) {
+				contenido = storageService.leer(evidencia.getPublicId(), evidencia.getResourceType(),
+						evidencia.getTipoEntrega());
+			} else {
+				contenido = new java.io.FileInputStream(java.nio.file.Paths.get(properties.local().directorio())
+						.resolve(evidencia.getNombreAlmacenado()).toFile());
+			}
+		} catch (java.io.IOException e) {
+			throw new BusinessRuleException("No se pudo leer el archivo");
+		}
 		return new Descarga(
 				evidencia.getNombreOriginal(),
 				evidencia.getContentType(),
 				evidencia.getTamano(),
-				storageService.abrir(evidencia.getNombreAlmacenado()));
+				contenido);
 	}
 
 	private void adjuntarSiCorresponde(Evidencia evidencia, MultipartFile archivo) {
@@ -144,10 +181,18 @@ public class EvidenciaService {
 			return;
 		}
 		validarArchivo(archivo);
-		String nombreAlmacenado = UUID.randomUUID() + "." + extension(archivo.getOriginalFilename());
-		storageService.guardar(archivo, nombreAlmacenado);
-		evidencia.adjuntarArchivo(archivo.getOriginalFilename(), nombreAlmacenado, archivo.getContentType(),
-				archivo.getSize(), nombreAlmacenado);
+		try {
+			ArchivoReferencia ref = storageService.guardar(archivo, "evidencias");
+			String clave = ref.publicId() != null ? ref.publicId() : (ref.url() != null ? ref.url() : ref.secureUrl());
+			String ruta = ref.secureUrl() != null ? ref.secureUrl() : ref.url();
+			evidencia.adjuntarArchivo(archivo.getOriginalFilename(), clave,
+					archivo.getContentType(), archivo.getSize(), ruta,
+					ref.proveedor(), ref.publicId(), ref.resourceType(), ref.tipoEntrega());
+		} catch (Exception e) {
+			log.error("Error al guardar el archivo adjunto en el proveedor de almacenamiento: {}",
+					e.getMessage(), e);
+			throw new BusinessRuleException("No se pudo guardar el archivo adjunto");
+		}
 	}
 
 	private void validarArchivo(MultipartFile archivo) {
