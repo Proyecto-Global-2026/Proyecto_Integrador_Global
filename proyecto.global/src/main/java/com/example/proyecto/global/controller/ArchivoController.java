@@ -25,6 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.proyecto.global.dto.ArchivoResponse;
 import com.example.proyecto.global.security.UsuarioPrincipal;
 import com.example.proyecto.global.service.ArchivoService;
+import com.example.proyecto.global.config.StorageProperties;
+import com.example.proyecto.global.storage.StorageService;
+import java.time.Duration;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,9 +38,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ArchivoController {
 
 	private final ArchivoService archivoService;
+	private final StorageService storageService;
+	private final StorageProperties properties;
+	private final com.example.proyecto.global.repository.ArchivoPlaneacionRepository archivoRepository;
 
-	public ArchivoController(ArchivoService archivoService) {
+	public ArchivoController(ArchivoService archivoService, StorageService storageService,
+			StorageProperties properties,
+			com.example.proyecto.global.repository.ArchivoPlaneacionRepository archivoRepository) {
 		this.archivoService = archivoService;
+		this.storageService = storageService;
+		this.properties = properties;
+		this.archivoRepository = archivoRepository;
 	}
 
 	@PostMapping
@@ -63,9 +74,27 @@ public class ArchivoController {
 	@GetMapping("/{archivoId}")
 	@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR', 'DIRECCION')")
 	@Operation(summary = "Descarga un archivo adjunto")
-	public ResponseEntity<InputStreamResource> descargar(@PathVariable UUID planeacionId,
+	public ResponseEntity<?> descargar(@PathVariable UUID planeacionId,
 			@PathVariable UUID archivoId,
 			@AuthenticationPrincipal UsuarioPrincipal principal) throws IOException {
+		com.example.proyecto.global.domain.ArchivoPlaneacion archivo = archivoRepository.buscarPorIdConPlaneacion(archivoId)
+				.orElseThrow(() -> new com.example.proyecto.global.exception.ResourceNotFoundException(
+						"Archivo no encontrado: " + archivoId));
+		com.example.proyecto.global.domain.Planeacion planeacion = archivo.getPlaneacion();
+		boolean esPropietario = planeacion.getDocente().getId().equals(principal.getId());
+		boolean esRevision = "COORDINADOR".equals(principal.getRol()) || "DIRECCION".equals(principal.getRol());
+		if (!esPropietario && !esRevision) {
+			throw new org.springframework.security.authorization.AuthorizationDeniedException(
+					"No tienes permisos para consultar los archivos de esta planeacion");
+		}
+		if (archivo.getPublicId() != null && !"local".equalsIgnoreCase(archivo.getProveedorAlmacenamiento())) {
+			String url = storageService.generarUrlDescargaSegura(archivo.getPublicId(),
+					archivo.getResourceType(), archivo.getTipoEntrega(), archivo.getNombreOriginal(),
+					Duration.ofMinutes(properties.cloudinary().duracionUrlMinutos()));
+			if (url != null) {
+				return ResponseEntity.status(302).header(HttpHeaders.LOCATION, url).build();
+			}
+		}
 		ArchivoService.Descarga descarga = archivoService.descargar(archivoId, principal.getRol(),
 				principal.getId());
 		InputStreamResource recurso = new InputStreamResource(descarga.contenido());

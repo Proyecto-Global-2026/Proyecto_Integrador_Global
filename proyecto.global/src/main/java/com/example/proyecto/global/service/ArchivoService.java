@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.example.proyecto.global.domain.ArchivoPlaneacion;
 import com.example.proyecto.global.domain.Planeacion;
 import com.example.proyecto.global.dto.ArchivoResponse;
@@ -20,10 +23,14 @@ import com.example.proyecto.global.exception.BusinessRuleException;
 import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.ArchivoPlaneacionRepository;
 import com.example.proyecto.global.repository.PlaneacionRepository;
-import com.example.proyecto.global.service.storage.FileStorageService;
+import com.example.proyecto.global.config.StorageProperties;
+import com.example.proyecto.global.storage.ArchivoReferencia;
+import com.example.proyecto.global.storage.StorageService;
 
 @Service
 public class ArchivoService {
+
+	private static final Logger log = LoggerFactory.getLogger(ArchivoService.class);
 
 	private static final String ROL_COORDINADOR = "COORDINADOR";
 	private static final String ROL_DIRECCION = "DIRECCION";
@@ -33,16 +40,19 @@ public class ArchivoService {
 
 	private final ArchivoPlaneacionRepository archivoRepository;
 	private final PlaneacionRepository planeacionRepository;
-	private final FileStorageService storageService;
+	private final StorageService storageService;
+	private final StorageProperties properties;
 	private final long maxTamanoBytes;
 
 	public ArchivoService(ArchivoPlaneacionRepository archivoRepository,
 			PlaneacionRepository planeacionRepository,
-			FileStorageService storageService,
+			StorageService storageService,
+			StorageProperties properties,
 			@Value("${app.storage.max-tamano-bytes:10485760}") long maxTamanoBytes) {
 		this.archivoRepository = archivoRepository;
 		this.planeacionRepository = planeacionRepository;
 		this.storageService = storageService;
+		this.properties = properties;
 		this.maxTamanoBytes = maxTamanoBytes;
 	}
 
@@ -58,16 +68,27 @@ public class ArchivoService {
 		}
 		validarArchivo(archivo);
 
-		String nombreAlmacenado = UUID.randomUUID() + "." + extension(archivo.getOriginalFilename());
-		storageService.guardar(archivo, nombreAlmacenado);
+		ArchivoReferencia ref;
+		try {
+			ref = storageService.guardar(archivo, "planeaciones");
+		} catch (Exception e) {
+			log.error("Error al guardar el archivo en el proveedor de almacenamiento: {}", e.getMessage(), e);
+			throw new BusinessRuleException("No se pudo guardar el archivo");
+		}
+		String clave = ref.publicId() != null ? ref.publicId() : (ref.url() != null ? ref.url() : ref.secureUrl());
+		String ruta = ref.secureUrl() != null ? ref.secureUrl() : ref.url();
 
 		ArchivoPlaneacion entidad = new ArchivoPlaneacion(
 				planeacion,
 				archivo.getOriginalFilename(),
-				nombreAlmacenado,
+				clave,
 				archivo.getContentType(),
 				archivo.getSize(),
-				nombreAlmacenado);
+				ruta,
+				ref.proveedor(),
+				ref.publicId(),
+				ref.resourceType(),
+				ref.tipoEntrega());
 		return ArchivoResponse.from(archivoRepository.save(entidad));
 	}
 
@@ -93,11 +114,24 @@ public class ArchivoService {
 		ArchivoPlaneacion archivo = archivoRepository.buscarPorIdConPlaneacion(archivoId)
 				.orElseThrow(() -> new ResourceNotFoundException("Archivo no encontrado: " + archivoId));
 		verificarAccesoLectura(archivo.getPlaneacion(), rolSolicitante, idSolicitante);
+		java.io.InputStream contenido;
+		try {
+			if (archivo.getPublicId() != null && !"local".equalsIgnoreCase(archivo.getProveedorAlmacenamiento())) {
+				contenido = storageService.leer(archivo.getPublicId(), archivo.getResourceType(),
+						archivo.getTipoEntrega());
+			} else {
+				contenido = new java.io.FileInputStream(
+						java.nio.file.Paths.get(properties.local().directorio())
+								.resolve(archivo.getNombreAlmacenado()).toFile());
+			}
+		} catch (java.io.IOException e) {
+			throw new com.example.proyecto.global.exception.BusinessRuleException("No se pudo leer el archivo");
+		}
 		return new Descarga(
 				archivo.getNombreOriginal(),
 				archivo.getContentType(),
 				archivo.getTamano(),
-				storageService.abrir(archivo.getNombreAlmacenado()));
+				contenido);
 	}
 
 	/**
@@ -110,7 +144,12 @@ public class ArchivoService {
 		if (!archivo.getPlaneacion().getDocente().getId().equals(idSolicitante)) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede eliminar archivos");
 		}
-		storageService.eliminar(archivo.getNombreAlmacenado());
+		if (archivo.getPublicId() != null && !"local".equalsIgnoreCase(archivo.getProveedorAlmacenamiento())) {
+			try {
+				storageService.eliminar(archivo.getPublicId(), archivo.getResourceType(), archivo.getTipoEntrega());
+			} catch (Exception ignored) {
+			}
+		}
 		archivoRepository.delete(archivo);
 	}
 
