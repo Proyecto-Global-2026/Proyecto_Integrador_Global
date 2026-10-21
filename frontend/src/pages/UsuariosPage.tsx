@@ -2,12 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,
   Button,
+  Checkbox,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   IconButton,
   InputLabel,
@@ -42,6 +44,8 @@ import { PanelFiltros } from '../components/catalogo/PanelFiltros'
 import { PanelResumen } from '../components/catalogo/PanelResumen'
 import { useConteosCatalogo } from '../hooks/useConteosCatalogo'
 import type { Paginado, Rol, Usuario } from '../types/usuario'
+import { AvisoPrivacidadSimplificado } from '../components/privacidad/AvisoPrivacidadSimplificado'
+import { ModalAvisoPrivacidad } from '../components/privacidad/ModalAvisoPrivacidad'
 
 const schemaCrear = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio').max(120, 'Máximo 120 caracteres'),
@@ -119,6 +123,8 @@ export function UsuariosPage() {
   const [dialogoEditar, setDialogoEditar] = useState<Usuario | null>(null)
   const [porConfirmar, setPorConfirmar] = useState<Usuario | null>(null)
   const [version, setVersion] = useState(0)
+  const [avisoModalAbierto, setAvisoModalAbierto] = useState(false)
+  const [avisoAceptadoCrear, setAvisoAceptadoCrear] = useState(false)
 
   const { activos, inactivos } = useConteosCatalogo(
     useCallback((params) => listarUsuarios({ rol: null, ...params }), []),
@@ -197,7 +203,8 @@ export function UsuariosPage() {
 
   const abrirCrear = () => {
     formCrear.reset({ nombre: '', email: '', password: '', rol: roles[0]?.nombre || '' })
-    setDialogoCrear(true)
+    setAvisoAceptadoCrear(false)
+    setAvisoModalAbierto(true)
   }
 
   const abrirEditar = (u: Usuario) => {
@@ -206,6 +213,11 @@ export function UsuariosPage() {
   }
 
   const guardarCrear = formCrear.handleSubmit(async (val) => {
+    if (!avisoAceptadoCrear) {
+      sileo.warning({ title: 'Debe aceptar el aviso de privacidad' })
+      setAvisoModalAbierto(true)
+      return
+    }
     try {
       await crearUsuario(val)
       setDialogoCrear(false)
@@ -375,6 +387,14 @@ export function UsuariosPage() {
         }
       />
 
+      <ModalAvisoPrivacidad
+        open={avisoModalAbierto}
+        onAceptar={() => {
+          setAvisoAceptadoCrear(true)
+          setAvisoModalAbierto(false)
+          setDialogoCrear(true)
+        }}
+      />
       <Dialog open={dialogoCrear} onClose={() => setDialogoCrear(false)} maxWidth="sm" fullWidth>
         <form onSubmit={guardarCrear} noValidate>
           <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.25, pb: 0 }}>
@@ -436,13 +456,18 @@ export function UsuariosPage() {
                 </Select>
                 <FormHelperText>{formCrear.formState.errors.rol?.message}</FormHelperText>
               </FormControl>
+              <AvisoPrivacidadSimplificado />
+              <FormControlLabel
+                control={<Checkbox checked={avisoAceptadoCrear} onChange={(e) => setAvisoAceptadoCrear(e.target.checked)} />}
+                label="He leído y acepto el Aviso de Privacidad"
+              />
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={() => setDialogoCrear(false)} color="inherit">
               Cancelar
             </Button>
-            <Button type="submit" variant="contained" disabled={formCrear.formState.isSubmitting}>
+            <Button type="submit" variant="contained" disabled={formCrear.formState.isSubmitting || !avisoAceptadoCrear}>
               Guardar
             </Button>
           </DialogActions>
