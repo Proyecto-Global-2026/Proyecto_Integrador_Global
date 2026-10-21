@@ -255,6 +255,16 @@ export function LoginPage() {
                 Contacta a coordinacion
               </Link>
             </Typography>
+
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
+              <Link href="/aviso-privacidad-simplificado" target="_blank" rel="noopener noreferrer" underline="hover">
+                Aviso de Privacidad Simplificado
+              </Link>
+              {' | '}
+              <Link href="/aviso-privacidad" target="_blank" rel="noopener noreferrer" underline="hover">
+                Aviso de Privacidad Integral
+              </Link>
+            </Typography>
           </Stack>
         </Card>
       </Box>

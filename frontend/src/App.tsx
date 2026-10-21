@@ -14,6 +14,8 @@ import { AvancesPage } from './pages/AvancesPage'
 import { EvidenciasPage } from './pages/EvidenciasPage'
 import { RevisionesEvidenciasPage } from './pages/RevisionesEvidenciasPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { AvisoPrivacidadPage } from './pages/AvisoPrivacidadPage'
+import { AvisoPrivacidadSimplificadoPage } from './pages/AvisoPrivacidadSimplificadoPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { RoleGuard } from './routes/RoleGuard'
 import { LayoutPrivado } from './routes/LayoutPrivado'
@@ -29,6 +31,8 @@ function App() {
         <Toaster position="bottom-right" theme={modo} />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/aviso-privacidad" element={<AvisoPrivacidadPage />} />
+          <Route path="/aviso-privacidad-simplificado" element={<AvisoPrivacidadSimplificadoPage />} />
           <Route path="/oauth2/callback" element={<OAuth2CallbackPage />} />
           <Route
             path="/"
