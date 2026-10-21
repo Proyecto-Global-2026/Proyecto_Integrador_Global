@@ -18,6 +18,7 @@ import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.EvidenciaRepository;
 import com.example.proyecto.global.repository.RevisionEvidenciaRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
+import com.example.proyecto.global.service.notificacion.NotificacionService;
 
 @Service
 public class RevisionEvidenciaService {
@@ -28,13 +29,16 @@ public class RevisionEvidenciaService {
 	private final RevisionEvidenciaRepository revisionRepository;
 	private final EvidenciaRepository evidenciaRepository;
 	private final UsuarioRepository usuarioRepository;
+	private final NotificacionService notificacionService;
 
 	public RevisionEvidenciaService(RevisionEvidenciaRepository revisionRepository,
 			EvidenciaRepository evidenciaRepository,
-			UsuarioRepository usuarioRepository) {
+			UsuarioRepository usuarioRepository,
+			NotificacionService notificacionService) {
 		this.revisionRepository = revisionRepository;
 		this.evidenciaRepository = evidenciaRepository;
 		this.usuarioRepository = usuarioRepository;
+		this.notificacionService = notificacionService;
 	}
 
 	/**
@@ -60,7 +64,13 @@ public class RevisionEvidenciaService {
 				destino,
 				request.comentario() == null ? null : request.comentario().trim(),
 				revisor);
-		return RevisionEvidenciaResponse.from(revisionRepository.save(revision));
+		RevisionEvidencia guardada = revisionRepository.save(revision);
+
+		// Disparo automatico de la notificacion por correo (S3-01).
+		notificacionService.notificarRevisionEvidencia(evidencia, anterior, destino,
+				request.comentario(), revisor);
+
+		return RevisionEvidenciaResponse.from(guardada);
 	}
 
 	/**
