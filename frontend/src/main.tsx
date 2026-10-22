@@ -8,9 +8,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { TemaApp } from './theme/TemaApp'
+import { forzarHttps } from './utils/seguridad'
 import './index.css'
 
 dayjs.locale('es')
+
+// Toda la aplicacion debe viajar por HTTPS fuera de localhost.
+forzarHttps()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

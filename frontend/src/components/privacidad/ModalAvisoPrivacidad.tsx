@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 import Dialog from '@mui/material/Dialog'
@@ -19,14 +19,10 @@ interface Props {
 export function ModalAvisoPrivacidad({ open, onAceptar }: Props) {
   const [aceptado, setAceptado] = useState(false)
 
-  useEffect(() => {
-    if (open) {
-      setAceptado(false)
-    }
-  }, [open])
-
   const handleAceptar = () => {
     sessionStorage.setItem(CLAVE_ACEPTACION, 'true')
+    // Se reinicia para que una nueva apertura exija aceptar de nuevo.
+    setAceptado(false)
     onAceptar()
   }
 
