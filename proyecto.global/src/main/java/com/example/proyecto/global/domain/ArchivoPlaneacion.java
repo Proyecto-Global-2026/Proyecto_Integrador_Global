@@ -57,6 +57,12 @@ public class ArchivoPlaneacion {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private OffsetDateTime createdAt;
 
+	@Column(name = "eliminado_por_retencion", nullable = false)
+	private boolean eliminadoPorRetencion = false;
+
+	@Column(name = "fecha_eliminacion_retencion")
+	private OffsetDateTime fechaEliminacionRetencion;
+
 	protected ArchivoPlaneacion() {
 	}
 
@@ -149,6 +155,27 @@ public class ArchivoPlaneacion {
 
 	public void setTipoEntrega(String tipoEntrega) {
 		this.tipoEntrega = tipoEntrega;
+	}
+
+	public boolean isEliminadoPorRetencion() {
+		return eliminadoPorRetencion;
+	}
+
+	public void setEliminadoPorRetencion(boolean eliminadoPorRetencion) {
+		this.eliminadoPorRetencion = eliminadoPorRetencion;
+	}
+
+	public OffsetDateTime getFechaEliminacionRetencion() {
+		return fechaEliminacionRetencion;
+	}
+
+	public void setFechaEliminacionRetencion(OffsetDateTime fechaEliminacionRetencion) {
+		this.fechaEliminacionRetencion = fechaEliminacionRetencion;
+	}
+
+	public void marcarEliminadoPorRetencion() {
+		this.eliminadoPorRetencion = true;
+		this.fechaEliminacionRetencion = OffsetDateTime.now();
 	}
 
 	public OffsetDateTime getCreatedAt() {
