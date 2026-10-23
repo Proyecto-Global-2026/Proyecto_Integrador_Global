@@ -33,6 +33,7 @@ import { EncabezadoPagina } from '../components/catalogo/EncabezadoPagina'
 import { PanelFiltros } from '../components/catalogo/PanelFiltros'
 import { SubirArchivo } from '../components/catalogo/SubirArchivo'
 import type { Evidencia, EvidenciaForm } from '../types/evidencias'
+import { esEnteroPositivo } from '../utils/payload'
 
 function mensajeDeError(error: unknown, fallback: string): string {
   if (axios.isAxiosError(error)) {
@@ -150,7 +151,6 @@ export function EvidenciasPage() {
 
   const validar = () => {
     const hoy = dayjs().format('YYYY-MM-DD')
-    const horasNumero = Number(horas)
     const nuevos: {
       curso?: string
       institucion?: string
@@ -166,8 +166,8 @@ export function EvidenciasPage() {
     }
     if (horas.trim() === '') {
       nuevos.horas = 'Las horas acreditadas son obligatorias'
-    } else if (!Number.isFinite(horasNumero) || horasNumero <= 0) {
-      nuevos.horas = 'Las horas deben ser mayores a cero'
+    } else if (!esEnteroPositivo(horas)) {
+      nuevos.horas = 'Las horas deben ser un numero entero mayor a cero'
     }
     setErrores(nuevos)
     return Object.keys(nuevos).length === 0

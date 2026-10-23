@@ -43,11 +43,12 @@ import { PanelFiltros } from '../components/catalogo/PanelFiltros'
 import { PanelResumen } from '../components/catalogo/PanelResumen'
 import { useConteosCatalogo } from '../hooks/useConteosCatalogo'
 import type { Parcial, Periodo } from '../types/catalogo'
+import { textoRequerido } from '../utils/payload'
 
 const schema = z
   .object({
     periodoId: z.string().min(1, 'Selecciona un periodo'),
-    nombre: z.string().min(1, 'El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
+    nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
     fechaInicio: z.string().min(1, 'La fecha de inicio es obligatoria'),
     fechaFin: z.string().min(1, 'La fecha de fin es obligatoria'),
   })
@@ -167,11 +168,17 @@ export function ParcialesPage() {
 
   const guardar = form.handleSubmit(async (valores) => {
     try {
+      const payload = {
+        periodoId: valores.periodoId,
+        nombre: textoRequerido(valores.nombre),
+        fechaInicio: valores.fechaInicio,
+        fechaFin: valores.fechaFin,
+      }
       if (dialogo === 'editar' && seleccionado) {
-        await actualizarParcial(seleccionado.id, { ...valores, activo: seleccionado.activo })
+        await actualizarParcial(seleccionado.id, { ...payload, activo: seleccionado.activo })
         sileo.success({ title: 'Parcial actualizado' })
       } else {
-        await crearParcial(valores)
+        await crearParcial(payload)
         sileo.success({ title: 'Parcial creado' })
       }
       setDialogo(null)

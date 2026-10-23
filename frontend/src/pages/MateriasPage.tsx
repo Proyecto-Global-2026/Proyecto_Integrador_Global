@@ -39,11 +39,12 @@ import { PanelFiltros } from '../components/catalogo/PanelFiltros'
 import { PanelResumen } from '../components/catalogo/PanelResumen'
 import { useConteosCatalogo } from '../hooks/useConteosCatalogo'
 import type { Materia } from '../types/catalogo'
+import { textoOpcional, textoRequerido } from '../utils/payload'
 
 const schema = z.object({
-  nombre: z.string().min(1, 'El nombre es obligatorio').max(150, 'Máximo 150 caracteres'),
-  codigo: z.string().min(1, 'El código es obligatorio').max(50, 'Máximo 50 caracteres'),
-  descripcion: z.string().max(255, 'Máximo 255 caracteres'),
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(150, 'Máximo 150 caracteres'),
+  codigo: z.string().trim().min(1, 'El código es obligatorio').max(50, 'Máximo 50 caracteres'),
+  descripcion: z.string().trim().max(255, 'Máximo 255 caracteres'),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -122,11 +123,16 @@ export function MateriasPage() {
 
   const guardar = form.handleSubmit(async (valores) => {
     try {
+      const payload = {
+        nombre: textoRequerido(valores.nombre),
+        codigo: textoRequerido(valores.codigo),
+        descripcion: textoOpcional(valores.descripcion),
+      }
       if (dialogo === 'editar' && seleccionada) {
-        await actualizarMateria(seleccionada.id, { ...valores, activo: seleccionada.activo })
+        await actualizarMateria(seleccionada.id, { ...payload, activo: seleccionada.activo })
         sileo.success({ title: 'Materia actualizada' })
       } else {
-        await crearMateria(valores)
+        await crearMateria(payload)
         sileo.success({ title: 'Materia creada' })
       }
       setDialogo(null)

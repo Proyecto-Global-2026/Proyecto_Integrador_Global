@@ -46,22 +46,29 @@ import { useConteosCatalogo } from '../hooks/useConteosCatalogo'
 import type { Paginado, Rol, Usuario } from '../types/usuario'
 import { AvisoPrivacidadSimplificado } from '../components/privacidad/AvisoPrivacidadSimplificado'
 import { ModalAvisoPrivacidad } from '../components/privacidad/ModalAvisoPrivacidad'
+import { textoRequerido } from '../utils/payload'
 
 const schemaCrear = z.object({
-  nombre: z.string().min(1, 'El nombre es obligatorio').max(120, 'Máximo 120 caracteres'),
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(120, 'Máximo 120 caracteres'),
   email: z
     .string()
+    .trim()
     .min(1, 'El correo es obligatorio')
     .email('Correo inválido')
     .max(180, 'Máximo 180 caracteres'),
-  password: z.string().min(8, 'Mínimo 8 caracteres').max(72, 'Máximo 72 caracteres'),
+  password: z
+    .string()
+    .min(8, 'Mínimo 8 caracteres')
+    .max(72, 'Máximo 72 caracteres')
+    .refine((valor) => valor.trim().length > 0, 'La contraseña no puede ser solo espacios'),
   rol: z.string().min(1, 'El rol es obligatorio'),
 })
 
 const schemaEditar = z.object({
-  nombre: z.string().min(1, 'El nombre es obligatorio').max(120, 'Máximo 120 caracteres'),
+  nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(120, 'Máximo 120 caracteres'),
   email: z
     .string()
+    .trim()
     .min(1, 'El correo es obligatorio')
     .email('Correo inválido')
     .max(180, 'Máximo 180 caracteres'),
@@ -219,7 +226,12 @@ export function UsuariosPage() {
       return
     }
     try {
-      await crearUsuario(val)
+      await crearUsuario({
+        nombre: textoRequerido(val.nombre),
+        email: textoRequerido(val.email),
+        password: val.password,
+        rol: val.rol,
+      })
       setDialogoCrear(false)
       sileo.success({ title: 'Usuario creado' })
       await cargar()
@@ -232,7 +244,11 @@ export function UsuariosPage() {
   const guardarEditar = formEditar.handleSubmit(async (val) => {
     if (!dialogoEditar) return
     try {
-      await actualizarUsuario(dialogoEditar.id, val)
+      await actualizarUsuario(dialogoEditar.id, {
+        nombre: textoRequerido(val.nombre),
+        email: textoRequerido(val.email),
+        rol: val.rol,
+      })
       setDialogoEditar(null)
       sileo.success({ title: 'Usuario actualizado' })
       await cargar()
