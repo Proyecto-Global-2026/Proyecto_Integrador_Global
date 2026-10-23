@@ -41,4 +41,19 @@ public interface ParcialRepository extends JpaRepository<Parcial, UUID> {
 			@Param("fechaInicioDesde") LocalDate fechaInicioDesde,
 			@Param("fechaFinHasta") LocalDate fechaFinHasta,
 			Pageable pageable);
+
+	/**
+	 * Parciales activos cuya fecha limite cae dentro de la ventana indicada.
+	 * Se usa para sincronizar las fechas limite con el calendario (S3-03).
+	 */
+	@EntityGraph(attributePaths = "periodo")
+	@Query("""
+			SELECT pr FROM Parcial pr
+			WHERE pr.activo = TRUE
+			  AND pr.fechaFin >= :desde
+			  AND pr.fechaFin <= :hasta
+			ORDER BY pr.fechaFin ASC
+			""")
+	List<Parcial> buscarActivosEntreFechas(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta,
+			Pageable pageable);
 }
