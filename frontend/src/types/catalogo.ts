@@ -15,13 +15,15 @@ export interface Materia {
 export interface MateriaCreateRequest {
   nombre: string
   codigo: string
-  descripcion: string
+  /** Opcional: se omite cuando el usuario no captura descripcion. */
+  descripcion?: string
 }
 
 export interface MateriaUpdateRequest {
   nombre: string
   codigo: string
-  descripcion: string
+  /** Opcional: se omite cuando el usuario no captura descripcion. */
+  descripcion?: string
   activo: boolean
 }
 

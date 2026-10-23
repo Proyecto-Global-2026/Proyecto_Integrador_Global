@@ -20,7 +20,7 @@ interface ParamsLista {
 export async function listarEvidencias(params: ParamsLista = {}): Promise<Paginado<Evidencia>> {
   const respuesta = await api.get<Paginado<Evidencia>>('/api/evidencias', {
     params: {
-      q: params.q || undefined,
+      q: params.q?.trim() || undefined,
       estado: params.estado || undefined,
       usuarioId: params.usuarioId || undefined,
       page: params.page ?? 0,

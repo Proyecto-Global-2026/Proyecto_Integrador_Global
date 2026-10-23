@@ -25,7 +25,7 @@ export async function listarMaterias(
 ): Promise<Paginado<Materia>> {
   const respuesta = await api.get<Paginado<Materia>>('/api/materias', {
     params: {
-      q: params.q || undefined,
+      q: params.q?.trim() || undefined,
       activo: params.activo === null ? undefined : params.activo,
       page: params.page ?? 0,
       size: params.size ?? 20,
@@ -60,7 +60,7 @@ export async function reactivarMateria(id: string): Promise<Materia> {
 export async function listarPeriodos(params: ParamsLista = {}): Promise<Paginado<Periodo>> {
   const respuesta = await api.get<Paginado<Periodo>>('/api/periodos', {
     params: {
-      q: params.q || undefined,
+      q: params.q?.trim() || undefined,
       activo: params.activo === null ? undefined : params.activo,
       page: params.page ?? 0,
       size: params.size ?? 20,
@@ -98,7 +98,7 @@ export async function listarParciales(
   const respuesta = await api.get<Paginado<Parcial>>('/api/parciales', {
     params: {
       periodoId: params.periodoId || undefined,
-      q: params.q || undefined,
+      q: params.q?.trim() || undefined,
       activo: params.activo === null ? undefined : params.activo,
       page: params.page ?? 0,
       size: params.size ?? 20,

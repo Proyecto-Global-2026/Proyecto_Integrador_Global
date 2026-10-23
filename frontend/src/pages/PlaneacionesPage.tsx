@@ -52,13 +52,18 @@ import { PanelFiltros } from '../components/catalogo/PanelFiltros'
 import { TarjetaEstadistica } from '../components/catalogo/TarjetaEstadistica'
 import type { Materia } from '../types/catalogo'
 import type { EstadoPlaneacion, Planeacion } from '../types/planeaciones'
+import { textoRequerido } from '../utils/payload'
 
 const schema = z.object({
   materiaId: z.string().min(1, 'Selecciona una materia'),
   periodoId: z.string().min(1, 'Selecciona un periodo'),
   parcialId: z.string().min(1, 'Selecciona un parcial'),
-  titulo: z.string().min(1, 'El título es obligatorio').max(200, 'Máximo 200 caracteres'),
-  contenido: z.string().min(1, 'El contenido es obligatorio'),
+  titulo: z
+    .string()
+    .trim()
+    .min(1, 'El título es obligatorio')
+    .max(200, 'Máximo 200 caracteres'),
+  contenido: z.string().trim().min(1, 'El contenido es obligatorio'),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -238,8 +243,8 @@ export function PlaneacionesPage() {
       const payload = {
         materiaId: valores.materiaId,
         parcialId: valores.parcialId,
-        titulo: valores.titulo,
-        contenido: valores.contenido,
+        titulo: textoRequerido(valores.titulo),
+        contenido: textoRequerido(valores.contenido),
       }
       if (dialogo === 'editar' && seleccionada) {
         await actualizarPlaneacion(seleccionada.id, payload)

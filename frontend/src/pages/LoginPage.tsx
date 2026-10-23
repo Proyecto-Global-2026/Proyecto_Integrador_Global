@@ -15,8 +15,11 @@ import type { ApiError } from '../auth/types'
 import { useTema } from '../theme/contextoTema'
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'El correo es obligatorio').email('Ingresa un correo valido'),
-  password: z.string().min(1, 'La contrasena es obligatoria'),
+  email: z.string().trim().min(1, 'El correo es obligatorio').email('Ingresa un correo valido'),
+  password: z
+    .string()
+    .min(1, 'La contrasena es obligatoria')
+    .refine((valor) => valor.trim().length > 0, 'La contrasena no puede ser solo espacios'),
 })
 
 type LoginValues = z.infer<typeof loginSchema>
