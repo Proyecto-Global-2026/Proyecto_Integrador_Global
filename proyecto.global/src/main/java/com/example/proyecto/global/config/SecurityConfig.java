@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 import com.example.proyecto.global.security.JwtAuthenticationFilter;
 import com.example.proyecto.global.security.SecurityErrorHandlers;
@@ -35,6 +36,14 @@ public class SecurityConfig {
 		http.cors(Customizer.withDefaults())
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.headers(headers -> headers
+						.httpStrictTransportSecurity(hsts -> hsts
+								.includeSubDomains(true)
+								.maxAgeInSeconds(31536000)
+								.preload(true))
+						.frameOptions(frame -> frame.deny())
+						.referrerPolicy(referrer -> referrer
+								.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
 				.exceptionHandling(ex -> ex.authenticationEntryPoint(securityErrorHandlers)
 						.accessDeniedHandler(securityErrorHandlers))
 				.authorizeHttpRequests(requests -> requests
