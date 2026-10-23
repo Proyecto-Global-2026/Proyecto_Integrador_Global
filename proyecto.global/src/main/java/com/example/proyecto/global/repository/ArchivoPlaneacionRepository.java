@@ -1,5 +1,6 @@
 package com.example.proyecto.global.repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,4 +31,15 @@ public interface ArchivoPlaneacionRepository extends JpaRepository<ArchivoPlanea
 	List<ArchivoPlaneacion> listarPorPlaneacionConPlaneacion(@Param("planeacionId") UUID planeacionId);
 
 	void deleteByPlaneacionId(UUID planeacionId);
+
+	/**
+	 * S3-07: archivos que superaron el plazo de conservacion y aun no fueron
+	 * eliminados por el proceso de retencion.
+	 */
+	@Query("""
+			SELECT a FROM ArchivoPlaneacion a
+			WHERE a.eliminadoPorRetencion = false
+			AND a.createdAt < :limite
+			""")
+	List<ArchivoPlaneacion> findAntiguosParaEliminar(@Param("limite") OffsetDateTime limite);
 }

@@ -52,6 +52,15 @@ public class Usuario {
 	@Column(name = "updated_at", nullable = false)
 	private OffsetDateTime updatedAt;
 
+	@Column(name = "anonimizado", nullable = false)
+	private boolean anonimizado = false;
+
+	@Column(name = "fecha_anonimizacion")
+	private OffsetDateTime fechaAnonimizacion;
+
+	@Column(name = "motivo_baja", length = 100)
+	private String motivoBaja;
+
 	protected Usuario() {
 	}
 
@@ -130,6 +139,48 @@ public class Usuario {
 
 	public void setProveedorId(String proveedorId) {
 		this.proveedorId = proveedorId;
+	}
+
+	public boolean isAnonimizado() {
+		return anonimizado;
+	}
+
+	public void setAnonimizado(boolean anonimizado) {
+		this.anonimizado = anonimizado;
+	}
+
+	public OffsetDateTime getFechaAnonimizacion() {
+		return fechaAnonimizacion;
+	}
+
+	public void setFechaAnonimizacion(OffsetDateTime fechaAnonimizacion) {
+		this.fechaAnonimizacion = fechaAnonimizacion;
+	}
+
+	public String getMotivoBaja() {
+		return motivoBaja;
+	}
+
+	public void setMotivoBaja(String motivoBaja) {
+		this.motivoBaja = motivoBaja;
+	}
+
+	/**
+	 * Sustituye los datos personales del usuario por valores no identificables
+	 * manteniendo la fila para no romper la trazabilidad de planeaciones y
+	 * revisiones (S3-07). La contrasena se reemplaza por un hash aleatorio que
+	 * no corresponde a ninguna credencial valida.
+	 */
+	public void anonimizar(String nombreAnonimizado, String emailAnonimizado, String passwordHash, String motivo) {
+		this.nombre = nombreAnonimizado;
+		this.email = emailAnonimizado;
+		this.password = passwordHash;
+		this.proveedor = null;
+		this.proveedorId = null;
+		this.activo = false;
+		this.anonimizado = true;
+		this.fechaAnonimizacion = OffsetDateTime.now();
+		this.motivoBaja = motivo;
 	}
 
 	public OffsetDateTime getCreatedAt() {
