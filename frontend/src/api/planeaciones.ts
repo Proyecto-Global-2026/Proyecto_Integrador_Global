@@ -29,7 +29,7 @@ export async function listarPlaneaciones(
 ): Promise<Paginado<Planeacion>> {
   const respuesta = await api.get<Paginado<Planeacion>>('/api/planeaciones', {
     params: {
-      q: params.q || undefined,
+      q: params.q?.trim() || undefined,
       estado: params.estado || undefined,
       materiaId: params.materiaId || undefined,
       parcialId: params.parcialId || undefined,
@@ -54,7 +54,7 @@ export async function listarPlaneacionesConsolidado(
   }
   const respuesta = await api.get<Paginado<Planeacion>>('/api/planeaciones', {
     params: {
-      q: params.q || undefined,
+      q: params.q?.trim() || undefined,
       estado: params.estado || undefined,
       materiaId: params.materiaId || undefined,
       parcialId: params.parcialId || undefined,
@@ -72,7 +72,7 @@ export async function listarHistorial(
 ): Promise<Paginado<Planeacion>> {
   const respuesta = await api.get<Paginado<Planeacion>>('/api/planeaciones/historial', {
     params: {
-      q: params.q || undefined,
+      q: params.q?.trim() || undefined,
       estado: params.estado || undefined,
       materiaId: params.materiaId || undefined,
       docenteId: params.docenteId || undefined,
