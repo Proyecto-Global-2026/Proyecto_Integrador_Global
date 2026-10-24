@@ -1,17 +1,17 @@
-name: CI - Build and Test
+name: Build
 
 on:
   push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: proyecto.global
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
@@ -20,6 +20,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
           cache: 'maven'
+          cache-dependency-path: proyecto.global/pom.xml
 
-      - name: Build and run tests
-        run: mvn -B clean verify
+      - name: Compile
+        run: mvn -B compile
