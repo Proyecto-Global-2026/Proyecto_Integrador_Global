@@ -23,25 +23,25 @@ import com.example.proyecto.global.repository.MateriaRepository;
 import com.example.proyecto.global.repository.ParcialRepository;
 import com.example.proyecto.global.repository.PlaneacionRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
+import com.example.proyecto.global.security.PoliticaAccesoDatos;
 
 @Service
 public class PlaneacionService {
-
-	private static final String ROL_DOCENTE = "DOCENTE";
-	private static final String ROL_COORDINADOR = "COORDINADOR";
-	private static final String ROL_DIRECCION = "DIRECCION";
 
 	private final PlaneacionRepository planeacionRepository;
 	private final UsuarioRepository usuarioRepository;
 	private final MateriaRepository materiaRepository;
 	private final ParcialRepository parcialRepository;
+	private final PoliticaAccesoDatos politica;
 
 	public PlaneacionService(PlaneacionRepository planeacionRepository, UsuarioRepository usuarioRepository,
-			MateriaRepository materiaRepository, ParcialRepository parcialRepository) {
+			MateriaRepository materiaRepository, ParcialRepository parcialRepository,
+			PoliticaAccesoDatos politica) {
 		this.planeacionRepository = planeacionRepository;
 		this.usuarioRepository = usuarioRepository;
 		this.materiaRepository = materiaRepository;
 		this.parcialRepository = parcialRepository;
+		this.politica = politica;
 	}
 
 	@Transactional
@@ -64,10 +64,9 @@ public class PlaneacionService {
 	@Transactional(readOnly = true)
 	public Page<Planeacion> listar(UUID docenteId, UUID materiaId, UUID parcialId, UUID periodoId,
 			EstadoPlaneacion estado, String q, String rolSolicitante, UUID idSolicitante, Pageable pageable) {
-		UUID filtroDocente = docenteId;
-		if (ROL_DOCENTE.equals(rolSolicitante)) {
-			filtroDocente = idSolicitante;
-		}
+		UUID filtroDocente = politica.puedeConsultarDatosDeTerceros(rolSolicitante)
+				? docenteId
+				: idSolicitante;
 		return planeacionRepository.buscar(filtroDocente, materiaId, parcialId, periodoId, estado, normalizar(q),
 				pageable);
 	}
@@ -83,7 +82,7 @@ public class PlaneacionService {
 	public Planeacion actualizar(UUID id, PlaneacionUpdateRequest request, String rolSolicitante,
 			UUID idSolicitante) {
 		Planeacion pl = obtener(id);
-		if (!pl.getDocente().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, pl.getDocente().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede editar su planeacion");
 		}
 		if (pl.getEstado() != EstadoPlaneacion.PENDIENTE
@@ -107,9 +106,7 @@ public class PlaneacionService {
 	}
 
 	private void verificarAccesoLectura(Planeacion pl, String rolSolicitante, UUID idSolicitante) {
-		boolean esPropietario = pl.getDocente().getId().equals(idSolicitante);
-		boolean esRevision = ROL_COORDINADOR.equals(rolSolicitante) || ROL_DIRECCION.equals(rolSolicitante);
-		if (!esPropietario && !esRevision) {
+		if (!politica.puedeConsultarDatosDe(rolSolicitante, idSolicitante, pl.getDocente().getId())) {
 			throw new AuthorizationDeniedException("No tienes permisos para consultar esta planeacion");
 		}
 	}

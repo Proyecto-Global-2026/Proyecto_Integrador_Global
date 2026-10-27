@@ -23,6 +23,7 @@ import com.example.proyecto.global.exception.BusinessRuleException;
 import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.ArchivoPlaneacionRepository;
 import com.example.proyecto.global.repository.PlaneacionRepository;
+import com.example.proyecto.global.security.PoliticaAccesoDatos;
 import com.example.proyecto.global.config.StorageProperties;
 import com.example.proyecto.global.storage.ArchivoReferencia;
 import com.example.proyecto.global.storage.StorageService;
@@ -32,9 +33,6 @@ public class ArchivoService {
 
 	private static final Logger log = LoggerFactory.getLogger(ArchivoService.class);
 
-	private static final String ROL_COORDINADOR = "COORDINADOR";
-	private static final String ROL_DIRECCION = "DIRECCION";
-
 	private static final Set<String> EXTENSIONES_PERMITIDAS = Set.of(
 			"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "jpg", "jpeg", "png");
 
@@ -42,17 +40,20 @@ public class ArchivoService {
 	private final PlaneacionRepository planeacionRepository;
 	private final StorageService storageService;
 	private final StorageProperties properties;
+	private final PoliticaAccesoDatos politica;
 	private final long maxTamanoBytes;
 
 	public ArchivoService(ArchivoPlaneacionRepository archivoRepository,
 			PlaneacionRepository planeacionRepository,
 			StorageService storageService,
 			StorageProperties properties,
+			PoliticaAccesoDatos politica,
 			@Value("${app.storage.max-tamano-bytes:10485760}") long maxTamanoBytes) {
 		this.archivoRepository = archivoRepository;
 		this.planeacionRepository = planeacionRepository;
 		this.storageService = storageService;
 		this.properties = properties;
+		this.politica = politica;
 		this.maxTamanoBytes = maxTamanoBytes;
 	}
 
@@ -63,7 +64,7 @@ public class ArchivoService {
 	public ArchivoResponse subir(UUID planeacionId, MultipartFile archivo, UUID idSolicitante) {
 		Planeacion planeacion = planeacionRepository.findById(planeacionId)
 				.orElseThrow(() -> new ResourceNotFoundException("Planeacion no encontrada: " + planeacionId));
-		if (!planeacion.getDocente().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, planeacion.getDocente().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede adjuntar archivos");
 		}
 		validarArchivo(archivo);
@@ -141,7 +142,7 @@ public class ArchivoService {
 	public void eliminar(UUID archivoId, UUID idSolicitante) {
 		ArchivoPlaneacion archivo = archivoRepository.buscarPorIdConPlaneacion(archivoId)
 				.orElseThrow(() -> new ResourceNotFoundException("Archivo no encontrado: " + archivoId));
-		if (!archivo.getPlaneacion().getDocente().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, archivo.getPlaneacion().getDocente().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede eliminar archivos");
 		}
 		if (archivo.getPublicId() != null && !"local".equalsIgnoreCase(archivo.getProveedorAlmacenamiento())) {
@@ -184,9 +185,7 @@ public class ArchivoService {
 	}
 
 	private void verificarAccesoLectura(Planeacion planeacion, String rolSolicitante, UUID idSolicitante) {
-		boolean esPropietario = planeacion.getDocente().getId().equals(idSolicitante);
-		boolean esRevision = ROL_COORDINADOR.equals(rolSolicitante) || ROL_DIRECCION.equals(rolSolicitante);
-		if (!esPropietario && !esRevision) {
+		if (!politica.puedeConsultarDatosDe(rolSolicitante, idSolicitante, planeacion.getDocente().getId())) {
 			throw new AuthorizationDeniedException("No tienes permisos para consultar los archivos de esta planeacion");
 		}
 	}

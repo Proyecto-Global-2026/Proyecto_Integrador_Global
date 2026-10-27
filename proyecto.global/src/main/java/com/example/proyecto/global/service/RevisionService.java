@@ -18,6 +18,7 @@ import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.PlaneacionRepository;
 import com.example.proyecto.global.repository.RevisionPlaneacionRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
+import com.example.proyecto.global.security.PoliticaAccesoDatos;
 import com.example.proyecto.global.service.notificacion.NotificacionService;
 
 @Service
@@ -27,15 +28,18 @@ public class RevisionService {
 	private final PlaneacionRepository planeacionRepository;
 	private final UsuarioRepository usuarioRepository;
 	private final NotificacionService notificacionService;
+	private final PoliticaAccesoDatos politica;
 
 	public RevisionService(RevisionPlaneacionRepository revisionRepository,
 			PlaneacionRepository planeacionRepository,
 			UsuarioRepository usuarioRepository,
-			NotificacionService notificacionService) {
+			NotificacionService notificacionService,
+			PoliticaAccesoDatos politica) {
 		this.revisionRepository = revisionRepository;
 		this.planeacionRepository = planeacionRepository;
 		this.usuarioRepository = usuarioRepository;
 		this.notificacionService = notificacionService;
+		this.politica = politica;
 	}
 
 	/**
@@ -78,9 +82,7 @@ public class RevisionService {
 	public List<RevisionResponse> historial(UUID planeacionId, String rolSolicitante, UUID idSolicitante) {
 		Planeacion planeacion = planeacionRepository.findById(planeacionId)
 				.orElseThrow(() -> new ResourceNotFoundException("Planeacion no encontrada: " + planeacionId));
-		boolean esPropietario = planeacion.getDocente().getId().equals(idSolicitante);
-		boolean esRevision = "COORDINADOR".equals(rolSolicitante) || "DIRECCION".equals(rolSolicitante);
-		if (!esPropietario && !esRevision) {
+		if (!politica.puedeConsultarDatosDe(rolSolicitante, idSolicitante, planeacion.getDocente().getId())) {
 			throw new AuthorizationDeniedException("No tienes permisos para consultar el historial de esta planeacion");
 		}
 		return revisionRepository.listarPorPlaneacion(planeacionId).stream()

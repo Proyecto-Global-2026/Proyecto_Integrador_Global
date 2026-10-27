@@ -2,6 +2,7 @@ package com.example.proyecto.global.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,7 @@ public class AuthController {
 	}
 
 	@GetMapping("/me")
+	@PreAuthorize("isAuthenticated()")
 	@Operation(summary = "Devuelve el usuario autenticado")
 	public UsuarioResponse me(@AuthenticationPrincipal UsuarioPrincipal principal) {
 		return authService.perfil(principal);
