@@ -65,6 +65,8 @@ public class SecurityConfig {
 						.hasRole(ROL_DIRECCION)
 						.requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasRole(ROL_DIRECCION)
 						.requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasRole(ROL_DIRECCION)
+						// S3-10: Derechos ARCO - cada usuario gestiona sus propios derechos
+						.requestMatchers("/api/usuarios/me/arco/**").authenticated()
 						// Reportes institucionales con datos personales agregados.
 						.requestMatchers("/api/reportes/**").hasAnyRole(ROL_COORDINADOR, ROL_DIRECCION)
 						// Administracion de seguridad, cifrado y retencion.
