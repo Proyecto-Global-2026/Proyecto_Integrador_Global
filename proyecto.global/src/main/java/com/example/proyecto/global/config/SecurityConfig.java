@@ -57,6 +57,10 @@ public class SecurityConfig {
 						.requestMatchers("/api/auth/registro", "/api/auth/login").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health")
 						.permitAll()
+						// S3-11: Bitacora de auditoria solo para ADMIN
+						.requestMatchers("/api/auditoria/**").hasRole(ROL_ADMIN)
+						// S3-10: Derechos ARCO - debe ir ANTES de /api/usuarios/**
+						.requestMatchers("/api/usuarios/me/arco/**").authenticated()
 						// S3-09: datos personales de usuarios. La regla de URL es la primera
 						// barrera; los @PreAuthorize de los controladores la refuerzan.
 						.requestMatchers(HttpMethod.GET, "/api/usuarios", "/api/usuarios/**", "/api/roles")
@@ -65,8 +69,6 @@ public class SecurityConfig {
 						.hasRole(ROL_DIRECCION)
 						.requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasRole(ROL_DIRECCION)
 						.requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasRole(ROL_DIRECCION)
-						// S3-10: Derechos ARCO - cada usuario gestiona sus propios derechos
-						.requestMatchers("/api/usuarios/me/arco/**").authenticated()
 						// Reportes institucionales con datos personales agregados.
 						.requestMatchers("/api/reportes/**").hasAnyRole(ROL_COORDINADOR, ROL_DIRECCION)
 						// Administracion de seguridad, cifrado y retencion.
