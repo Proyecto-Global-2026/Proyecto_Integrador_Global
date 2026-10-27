@@ -1,8 +1,8 @@
 package com.example.proyecto.global.service;
 
+import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class AuthService {
 		try {
 			authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(email, request.password()));
-		} catch (BadCredentialsException | DisabledException ex) {
+		} catch (BadCredentialsException | AccountStatusException ex) {
 			throw new CredencialesInvalidasException();
 		}
 

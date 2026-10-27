@@ -18,27 +18,28 @@ import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.EvidenciaRepository;
 import com.example.proyecto.global.repository.RevisionEvidenciaRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
+import com.example.proyecto.global.security.PoliticaAccesoDatos;
 import com.example.proyecto.global.service.notificacion.NotificacionService;
 
 @Service
 public class RevisionEvidenciaService {
 
-	private static final String ROL_COORDINADOR = "COORDINADOR";
-	private static final String ROL_DIRECCION = "DIRECCION";
-
 	private final RevisionEvidenciaRepository revisionRepository;
 	private final EvidenciaRepository evidenciaRepository;
 	private final UsuarioRepository usuarioRepository;
 	private final NotificacionService notificacionService;
+	private final PoliticaAccesoDatos politica;
 
 	public RevisionEvidenciaService(RevisionEvidenciaRepository revisionRepository,
 			EvidenciaRepository evidenciaRepository,
 			UsuarioRepository usuarioRepository,
-			NotificacionService notificacionService) {
+			NotificacionService notificacionService,
+			PoliticaAccesoDatos politica) {
 		this.revisionRepository = revisionRepository;
 		this.evidenciaRepository = evidenciaRepository;
 		this.usuarioRepository = usuarioRepository;
 		this.notificacionService = notificacionService;
+		this.politica = politica;
 	}
 
 	/**
@@ -81,9 +82,7 @@ public class RevisionEvidenciaService {
 	public List<RevisionEvidenciaResponse> historial(UUID evidenciaId, String rolSolicitante, UUID idSolicitante) {
 		Evidencia evidencia = evidenciaRepository.buscarPorIdConUsuario(evidenciaId)
 				.orElseThrow(() -> new ResourceNotFoundException("Evidencia no encontrada: " + evidenciaId));
-		boolean esPropietario = evidencia.getUsuario().getId().equals(idSolicitante);
-		boolean esRevision = ROL_COORDINADOR.equals(rolSolicitante) || ROL_DIRECCION.equals(rolSolicitante);
-		if (!esPropietario && !esRevision) {
+		if (!politica.puedeConsultarDatosDe(rolSolicitante, idSolicitante, evidencia.getUsuario().getId())) {
 			throw new AuthorizationDeniedException("No tienes permisos para consultar el historial de esta evidencia");
 		}
 		return revisionRepository.listarPorEvidencia(evidenciaId).stream()

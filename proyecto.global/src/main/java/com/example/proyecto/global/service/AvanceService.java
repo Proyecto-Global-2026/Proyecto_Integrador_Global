@@ -17,23 +17,24 @@ import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.AvanceParcialRepository;
 import com.example.proyecto.global.repository.PlaneacionRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
+import com.example.proyecto.global.security.PoliticaAccesoDatos;
 
 @Service
 public class AvanceService {
 
-	private static final String ROL_COORDINADOR = "COORDINADOR";
-	private static final String ROL_DIRECCION = "DIRECCION";
-
 	private final AvanceParcialRepository avanceRepository;
 	private final PlaneacionRepository planeacionRepository;
 	private final UsuarioRepository usuarioRepository;
+	private final PoliticaAccesoDatos politica;
 
 	public AvanceService(AvanceParcialRepository avanceRepository,
 			PlaneacionRepository planeacionRepository,
-			UsuarioRepository usuarioRepository) {
+			UsuarioRepository usuarioRepository,
+			PoliticaAccesoDatos politica) {
 		this.avanceRepository = avanceRepository;
 		this.planeacionRepository = planeacionRepository;
 		this.usuarioRepository = usuarioRepository;
+		this.politica = politica;
 	}
 
 	/**
@@ -44,7 +45,7 @@ public class AvanceService {
 	public AvanceResponse registrar(UUID planeacionId, AvanceRequest request, UUID idSolicitante) {
 		Planeacion planeacion = planeacionRepository.findById(planeacionId)
 				.orElseThrow(() -> new ResourceNotFoundException("Planeacion no encontrada: " + planeacionId));
-		if (!planeacion.getDocente().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, planeacion.getDocente().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede registrar el avance");
 		}
 		UUID parcialId = planeacion.getParcial().getId();
@@ -91,7 +92,7 @@ public class AvanceService {
 	@Transactional
 	public AvanceResponse actualizar(UUID avanceId, AvanceRequest request, UUID idSolicitante) {
 		AvanceParcial avance = obtener(avanceId);
-		if (!avance.getPlaneacion().getDocente().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, avance.getPlaneacion().getDocente().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede actualizar el avance");
 		}
 		avance.actualizar(request.estado(), normalizar(request.observaciones()));
@@ -104,7 +105,7 @@ public class AvanceService {
 	@Transactional
 	public void eliminar(UUID avanceId, UUID idSolicitante) {
 		AvanceParcial avance = obtener(avanceId);
-		if (!avance.getPlaneacion().getDocente().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, avance.getPlaneacion().getDocente().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede eliminar el avance");
 		}
 		avanceRepository.delete(avance);
@@ -116,9 +117,7 @@ public class AvanceService {
 	}
 
 	private void verificarAccesoLectura(Planeacion planeacion, String rolSolicitante, UUID idSolicitante) {
-		boolean esPropietario = planeacion.getDocente().getId().equals(idSolicitante);
-		boolean esRevision = ROL_COORDINADOR.equals(rolSolicitante) || ROL_DIRECCION.equals(rolSolicitante);
-		if (!esPropietario && !esRevision) {
+		if (!politica.puedeConsultarDatosDe(rolSolicitante, idSolicitante, planeacion.getDocente().getId())) {
 			throw new AuthorizationDeniedException("No tienes permisos para consultar los avances de esta planeacion");
 		}
 	}

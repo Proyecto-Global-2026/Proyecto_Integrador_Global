@@ -1,8 +1,15 @@
 package com.example.proyecto.global.config;
 
+import static com.example.proyecto.global.security.PoliticaAccesoDatos.ROL_ADMIN;
+import static com.example.proyecto.global.security.PoliticaAccesoDatos.ROL_COORDINADOR;
+import static com.example.proyecto.global.security.PoliticaAccesoDatos.ROL_DOCENTE;
+import static com.example.proyecto.global.security.PoliticaAccesoDatos.ROL_DIRECCION;
+import static com.example.proyecto.global.security.PoliticaAccesoDatos.ROL_JEFE_DE_CARRERA;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -50,6 +57,22 @@ public class SecurityConfig {
 						.requestMatchers("/api/auth/registro", "/api/auth/login").permitAll()
 						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health")
 						.permitAll()
+						// S3-09: datos personales de usuarios. La regla de URL es la primera
+						// barrera; los @PreAuthorize de los controladores la refuerzan.
+						.requestMatchers(HttpMethod.GET, "/api/usuarios", "/api/usuarios/**", "/api/roles")
+						.hasAnyRole(ROL_COORDINADOR, ROL_DIRECCION)
+						.requestMatchers(HttpMethod.POST, "/api/usuarios", "/api/usuarios/*/reactivar")
+						.hasRole(ROL_DIRECCION)
+						.requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasRole(ROL_DIRECCION)
+						.requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasRole(ROL_DIRECCION)
+						// Reportes institucionales con datos personales agregados.
+						.requestMatchers("/api/reportes/**").hasAnyRole(ROL_COORDINADOR, ROL_DIRECCION)
+						// Administracion de seguridad, cifrado y retencion.
+						.requestMatchers("/api/retencion/**", "/api/cifrado/**", "/api/seguridad/**")
+						.hasRole(ROL_ADMIN)
+						// Calendario personal: cada usuario solo opera el suyo.
+						.requestMatchers("/api/calendario/**")
+						.hasAnyRole(ROL_DOCENTE, ROL_COORDINADOR, ROL_JEFE_DE_CARRERA, ROL_ADMIN)
 						.anyRequest().authenticated())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
