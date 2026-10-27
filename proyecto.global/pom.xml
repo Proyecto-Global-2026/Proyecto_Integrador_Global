@@ -101,6 +101,13 @@
 			<version>1.39.0</version>
 		</dependency>
 
+		<!-- Cifrado de datos en reposo (S3-08) -->
+		<dependency>
+			<groupId>com.github.ulisesbocchio</groupId>
+			<artifactId>jasypt-spring-boot-starter</artifactId>
+			<version>3.0.5</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
