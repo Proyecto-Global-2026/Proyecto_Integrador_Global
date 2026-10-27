@@ -143,28 +143,27 @@ public class CloudinaryStorageService implements StorageService {
 		if (publicId == null || publicId.isBlank()) {
 			throw new BusinessRuleException("Referencia de archivo invalida");
 		}
-		String tipoRecurso = resourceType == null ? "raw" : resourceType;
-		String entrega = tipoEntrega == null || tipoEntrega.isBlank() ? TIPO_ENTREGA_POR_DEFECTO : tipoEntrega;
-		long expiresAt = Instant.now()
-				.plus(expiracion == null ? Duration.ofMinutes(properties.cloudinary().duracionUrlMinutos()) : expiracion)
-				.getEpochSecond();
+		String tipoRecurso = (resourceType == null || resourceType.isBlank())
+				? properties.cloudinary().resourceTypePorDefecto()
+				: resourceType;
+		String entrega = (tipoEntrega == null || tipoEntrega.isBlank()) ? TIPO_ENTREGA_POR_DEFECTO : tipoEntrega;
+		Duration duracion = expiracion == null
+				? Duration.ofMinutes(properties.cloudinary().duracionUrlMinutos())
+				: expiracion;
+		long expiresAt = Instant.now().plus(duracion).getEpochSecond();
 		try {
-			String nombre = StringUtils.hasText(nombreOriginal) ? nombreOriginal : nombreDesdePublicId(publicId);
-			String ext = extension(nombre);
-			if (!StringUtils.hasText(ext)) {
-				ext = extension(publicId);
-				if (StringUtils.hasText(ext)) {
-					nombre = nombre + "." + ext;
-				}
-			} else if (StringUtils.hasText(ext) && !nombre.toLowerCase(Locale.ROOT).endsWith("." + ext)) {
-				// asegurar extensión consistente
-			}
+			// El formato se deduce del public_id (por ejemplo, "evidencia.pdf" -> "pdf").
+			String formato = extension(publicId);
+			// Cloudinary exige "attachment=true" para forzar la descarga. Si se
+			// conoce el nombre original se envia para que el navegador guarde el
+			// archivo con ese nombre.
+			Object adjunto = StringUtils.hasText(nombreOriginal) ? nombreOriginal : Boolean.TRUE;
 			Map<String, Object> opciones = ObjectUtils.asMap(
 					"resource_type", tipoRecurso,
 					"type", entrega,
 					"expires_at", expiresAt,
-					"attachment", nombre);
-			return cloudinary.privateDownload(publicId, ext, opciones);
+					"attachment", adjunto);
+			return cloudinary.privateDownload(publicId, formato, opciones);
 		} catch (Exception e) {
 			log.error("Error generando URL de descarga para {}: {}", publicId, e.getMessage());
 			throw new BusinessRuleException("No se pudo generar el enlace de descarga del archivo");
