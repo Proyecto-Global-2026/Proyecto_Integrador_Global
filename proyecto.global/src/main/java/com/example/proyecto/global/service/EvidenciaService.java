@@ -26,6 +26,7 @@ import com.example.proyecto.global.exception.BusinessRuleException;
 import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.EvidenciaRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
+import com.example.proyecto.global.security.PoliticaAccesoDatos;
 import com.example.proyecto.global.config.StorageProperties;
 import com.example.proyecto.global.storage.ArchivoReferencia;
 import com.example.proyecto.global.storage.StorageService;
@@ -35,10 +36,6 @@ public class EvidenciaService {
 
 	private static final Logger log = LoggerFactory.getLogger(EvidenciaService.class);
 
-	private static final String ROL_DOCENTE = "DOCENTE";
-	private static final String ROL_COORDINADOR = "COORDINADOR";
-	private static final String ROL_DIRECCION = "DIRECCION";
-
 	private static final Set<String> EXTENSIONES_PERMITIDAS = Set.of(
 			"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "jpg", "jpeg", "png");
 
@@ -46,17 +43,20 @@ public class EvidenciaService {
 	private final UsuarioRepository usuarioRepository;
 	private final StorageService storageService;
 	private final StorageProperties properties;
+	private final PoliticaAccesoDatos politica;
 	private final long maxTamanoBytes;
 
 	public EvidenciaService(EvidenciaRepository evidenciaRepository,
 			UsuarioRepository usuarioRepository,
 			StorageService storageService,
 			StorageProperties properties,
+			PoliticaAccesoDatos politica,
 			@Value("${app.storage.max-tamano-bytes:10485760}") long maxTamanoBytes) {
 		this.evidenciaRepository = evidenciaRepository;
 		this.usuarioRepository = usuarioRepository;
 		this.storageService = storageService;
 		this.properties = properties;
+		this.politica = politica;
 		this.maxTamanoBytes = maxTamanoBytes;
 	}
 
@@ -80,10 +80,9 @@ public class EvidenciaService {
 	@Transactional(readOnly = true)
 	public Page<Evidencia> listar(UUID usuarioId, EstadoEvidencia estado, String q, String rolSolicitante,
 			UUID idSolicitante, Pageable pageable) {
-		UUID filtroUsuario = usuarioId;
-		if (ROL_DOCENTE.equals(rolSolicitante)) {
-			filtroUsuario = idSolicitante;
-		}
+		UUID filtroUsuario = politica.puedeConsultarDatosDeTerceros(rolSolicitante)
+				? usuarioId
+				: idSolicitante;
 		return evidenciaRepository.buscar(filtroUsuario, estado, normalizar(q), pageable);
 	}
 
@@ -101,7 +100,7 @@ public class EvidenciaService {
 	@Transactional
 	public EvidenciaResponse actualizar(UUID id, EvidenciaRequest request, MultipartFile archivo, UUID idSolicitante) {
 		Evidencia evidencia = obtener(id);
-		if (!evidencia.getUsuario().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, evidencia.getUsuario().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede actualizar su evidencia");
 		}
 		evidencia.actualizar(request.curso().trim(), request.institucion().trim(), request.fecha(),
@@ -132,7 +131,7 @@ public class EvidenciaService {
 	@Transactional
 	public void eliminar(UUID id, UUID idSolicitante) {
 		Evidencia evidencia = obtener(id);
-		if (!evidencia.getUsuario().getId().equals(idSolicitante)) {
+		if (!politica.puedeModificarDatosDe(idSolicitante, evidencia.getUsuario().getId())) {
 			throw new AuthorizationDeniedException("Solo el docente propietario puede eliminar su evidencia");
 		}
 		if (evidencia.tieneArchivo()) {
@@ -228,9 +227,7 @@ public class EvidenciaService {
 	}
 
 	private void verificarAccesoLectura(Evidencia evidencia, String rolSolicitante, UUID idSolicitante) {
-		boolean esPropietario = evidencia.getUsuario().getId().equals(idSolicitante);
-		boolean esRevision = ROL_COORDINADOR.equals(rolSolicitante) || ROL_DIRECCION.equals(rolSolicitante);
-		if (!esPropietario && !esRevision) {
+		if (!politica.puedeConsultarDatosDe(rolSolicitante, idSolicitante, evidencia.getUsuario().getId())) {
 			throw new AuthorizationDeniedException("No tienes permisos para consultar esta evidencia");
 		}
 	}

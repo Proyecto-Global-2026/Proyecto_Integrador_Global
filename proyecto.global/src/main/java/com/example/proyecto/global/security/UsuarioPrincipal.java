@@ -77,7 +77,10 @@ public class UsuarioPrincipal implements UserDetails {
 
 	@Override
 	public boolean isAccountNonLocked() {
-		return activo;
+		// La aplicacion no usa bloqueo de cuenta. El estado activo se controla
+		// con isEnabled() para que Spring emita DisabledException y el login
+		// responda 401 en lugar de LockedException.
+		return true;
 	}
 
 	@Override
