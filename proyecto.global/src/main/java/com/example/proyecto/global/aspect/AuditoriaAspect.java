@@ -35,6 +35,12 @@ public class AuditoriaAspect {
 			String method = request == null ? null : request.getMethod();
 			String uri = request == null ? null : request.getRequestURI();
 
+			if (uri != null && (uri.contains("/api/auditoria") || uri.contains("/api/auth/login")
+					|| uri.contains("/api/auth/registro") || uri.contains("/swagger") || uri.contains("/v3/api-docs")
+					|| uri.contains("/actuator"))) {
+				return;
+			}
+
 			AuditoriaEvento.Accion accion = mapAccion(method, uri);
 			if (accion == null) {
 				return;
