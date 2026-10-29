@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: proyecto-global-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: proyecto_global
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d proyecto_global"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./proyecto.global
+      dockerfile: Dockerfile
+    container_name: proyecto-global-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./proyecto.global/.env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/proyecto_global?currentSchema=proyecto_global
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_FLYWAY_ENABLED: true
+      SPRING_FLYWAY_SCHEMAS: proyecto_global
+      SPRING_FLYWAY_DEFAULT_SCHEMA: proyecto_global
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./proyecto.global/logs:/app/logs
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: proyecto-global-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  pg_data:
