@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS consentimiento_terceros (
     tercero                   VARCHAR(50)  NOT NULL,
     consentimiento_otorgado   BOOLEAN      NOT NULL DEFAULT FALSE,
     version_aviso             VARCHAR(20),
-    ip_otorgamiento           INET,
+    ip_otorgamiento           VARCHAR(45),
     user_agent                VARCHAR(500),
     fecha_otorgamiento        TIMESTAMPTZ,
     fecha_revocacion          TIMESTAMPTZ,

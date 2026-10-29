@@ -44,7 +44,7 @@ public class ConsentimientoTerceros {
 	@Column(name = "version_aviso", length = 20)
 	private String versionAviso;
 
-	@Column(name = "ip_otorgamiento", columnDefinition = "inet")
+	@Column(name = "ip_otorgamiento", length = 45)
 	private String ipOtorgamiento;
 
 	@Column(name = "user_agent", length = 500)
