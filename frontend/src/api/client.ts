@@ -3,7 +3,7 @@ import { clearToken, getToken } from '../auth/token'
 import { validarUrlApi } from '../utils/seguridad'
 
 const envUrl = import.meta.env.VITE_API_URL as string | undefined
-const API_URL = validarUrlApi(envUrl && envUrl.trim() !== '' ? envUrl : '/api')
+const API_URL = validarUrlApi(envUrl && envUrl.trim() !== '' ? envUrl : '/')
 
 export const api = axios.create({
   baseURL: API_URL,

@@ -29,12 +29,15 @@ services:
     env_file:
       - ./proyecto.global/.env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/proyecto_global?currentSchema=proyecto_global
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/proyecto_global
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_FLYWAY_ENABLED: true
       SPRING_FLYWAY_SCHEMAS: proyecto_global
       SPRING_FLYWAY_DEFAULT_SCHEMA: proyecto_global
+      SPRING_FLYWAY_CREATE_SCHEMAS: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: proyecto_global
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
       JAVA_OPTS: "-Xms256m -Xmx512m"
     ports:
       - "8080:8080"
