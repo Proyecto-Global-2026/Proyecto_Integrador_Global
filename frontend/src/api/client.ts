@@ -2,9 +2,8 @@ import axios from 'axios'
 import { clearToken, getToken } from '../auth/token'
 import { validarUrlApi } from '../utils/seguridad'
 
-const API_URL = validarUrlApi(
-  (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080',
-)
+const envUrl = import.meta.env.VITE_API_URL as string | undefined
+const API_URL = validarUrlApi(envUrl && envUrl.trim() !== '' ? envUrl : '/')
 
 export const api = axios.create({
   baseURL: API_URL,
