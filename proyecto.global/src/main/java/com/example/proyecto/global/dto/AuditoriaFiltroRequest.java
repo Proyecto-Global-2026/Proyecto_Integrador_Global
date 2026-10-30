@@ -9,7 +9,7 @@ public record AuditoriaFiltroRequest(
         String recurso,
         String accion,
         String resultado,
-        OffsetDateTime fechaDesde,
-        OffsetDateTime fechaHasta
+        OffsetDateTime desde,
+        OffsetDateTime hasta
 ) {
 }
