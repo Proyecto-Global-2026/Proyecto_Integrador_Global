@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.proyecto.global.config.CalendarioProperties;
 import com.example.proyecto.global.domain.ConexionCalendario;
+import com.example.proyecto.global.domain.ConsentimientoTerceros;
 import com.example.proyecto.global.domain.EventoCalendario;
 import com.example.proyecto.global.domain.Parcial;
 import com.example.proyecto.global.domain.Periodo;
@@ -23,6 +24,7 @@ import com.example.proyecto.global.dto.SincronizacionCalendarioResponse;
 import com.example.proyecto.global.exception.BusinessRuleException;
 import com.example.proyecto.global.exception.ResourceNotFoundException;
 import com.example.proyecto.global.repository.ConexionCalendarioRepository;
+import com.example.proyecto.global.repository.ConsentimientoTercerosRepository;
 import com.example.proyecto.global.repository.EventoCalendarioRepository;
 import com.example.proyecto.global.repository.ParcialRepository;
 import com.example.proyecto.global.repository.UsuarioRepository;
@@ -40,19 +42,22 @@ public class CalendarioService {
 	private final EventoCalendarioRepository eventoRepository;
 	private final ParcialRepository parcialRepository;
 	private final UsuarioRepository usuarioRepository;
+	private final ConsentimientoTercerosRepository consentimientoRepository;
 
 	public CalendarioService(CalendarioProperties properties,
 			CalendarioCliente calendarioCliente,
 			ConexionCalendarioRepository conexionRepository,
 			EventoCalendarioRepository eventoRepository,
 			ParcialRepository parcialRepository,
-			UsuarioRepository usuarioRepository) {
+			UsuarioRepository usuarioRepository,
+			ConsentimientoTercerosRepository consentimientoRepository) {
 		this.properties = properties;
 		this.calendarioCliente = calendarioCliente;
 		this.conexionRepository = conexionRepository;
 		this.eventoRepository = eventoRepository;
 		this.parcialRepository = parcialRepository;
 		this.usuarioRepository = usuarioRepository;
+		this.consentimientoRepository = consentimientoRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -72,6 +77,11 @@ public class CalendarioService {
 		exigirHabilitado();
 		Usuario usuario = usuarioRepository.findById(usuarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + usuarioId));
+
+		consentimientoRepository.findByUsuarioIdAndTercero(usuarioId, ConsentimientoTerceros.Tercero.GOOGLE_CALENDAR)
+				.filter(ConsentimientoTerceros::isConsentimientoOtorgado)
+				.orElseThrow(() -> new BusinessRuleException(
+						"Se requiere consentimiento expreso para la transferencia de datos a Google Calendar"));
 
 		TokenCalendario token = calendarioCliente.intercambiarCodigo(codigo, redirectUri);
 		if (token.refreshToken() == null || token.refreshToken().isBlank()) {
@@ -135,6 +145,10 @@ public class CalendarioService {
 		exigirHabilitado();
 		Usuario usuario = usuarioRepository.findById(usuarioId)
 				.orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + usuarioId));
+		consentimientoRepository.findByUsuarioIdAndTercero(usuarioId, ConsentimientoTerceros.Tercero.GOOGLE_CALENDAR)
+				.filter(ConsentimientoTerceros::isConsentimientoOtorgado)
+				.orElseThrow(() -> new BusinessRuleException(
+						"Se requiere consentimiento expreso para la transferencia de datos a Google Calendar"));
 		ConexionCalendario conexion = obtenerConexionActiva(usuarioId);
 		String accessToken = accessTokenVigente(conexion);
 

@@ -24,3 +24,4 @@ CREATE TRIGGER trg_consentimiento_terceros_updated_at
     BEFORE UPDATE ON consentimiento_terceros
     FOR EACH ROW
     EXECUTE FUNCTION set_updated_at();
+
