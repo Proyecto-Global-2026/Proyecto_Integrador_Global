@@ -1,0 +1,5 @@
+ALTER TABLE auditoria_eventos
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW();
+
+ALTER TABLE auditoria_eventos
+    ALTER COLUMN created_at DROP DEFAULT;
