@@ -22,7 +22,12 @@ EXPOSE 8080
 
 # Variables por defecto (se pueden sobreescribir con docker-compose/.env)
 ENV SPRING_PROFILES_ACTIVE=default
-ENV JAVA_OPTS="-Xms256m -Xmx512m"
+ENV JAVA_OPTS="-Xms256m -Xmx1024m -XX:TieredStopAtLevel=1"
+
+# Vercel (runtime Container) tiene el sistema de archivos de solo lectura
+# salvo /tmp, por eso el almacenamiento local se redirige ahi. En Render o
+# docker-compose se puede sobreescribir con STORAGE_DIR si se necesita persistir.
+ENV STORAGE_DIR=/tmp/uploads/planeaciones
 
 # Arrancar app
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
